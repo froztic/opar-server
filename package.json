@@ -1,0 +1,26 @@
+{
+  "name": "opar-server",
+  "version": "0.0.1",
+  "description": "server app for opar system",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/froztic/opar-server.git"
+  },
+  "author": "froztic",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/froztic/opar-server/issues"
+  },
+  "homepage": "https://github.com/froztic/opar-server#readme",
+  "dependencies": {
+    "async": "^1.5.0",
+    "body-parser": "^1.14.1",
+    "express": "^4.13.3",
+    "jsonwebtoken": "^5.4.1",
+    "mongoose": "^4.2.5"
+  }
+}
