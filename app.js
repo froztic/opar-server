@@ -13,6 +13,9 @@ var secret = "EIFJHSGUY235THGL6KN7W9L0UIHQW2R0QP5QOJ9SDLFU23GSI8U6HE4TJG8PW4OP9O
 
 var tokend;
 
+var jsonParser = bodyParser.json()
+var urlencodedParser = bodyParser.urlencoded({ extended: true, limit: '20mb' });
+
 app.get('/', function(req, res) {
 	res.sendFile(__dirname + '/html/index.html');
 	if(req.headers['user-agent'] == null) {
@@ -22,11 +25,21 @@ app.get('/', function(req, res) {
 	}
 });
 
-app.get('/user.login', function(req, res) {
+app.post('/user.login', jsonParser, function(req, res) {
 	var ret = {
 		success: false,
 		msg: 'undefined'
 	};
+	res.status(200).send(ret);
+});
+
+app.post('/patient.register', jsonParser, function(req, res) {
+	var ret = {
+		success: false,
+		msg: 'undefined'
+	};
+	console.log(req.body);
+	ret.username = req.body.username;
 	res.status(200).send(ret);
 });
 
