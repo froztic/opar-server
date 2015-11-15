@@ -11,9 +11,17 @@ mongoose.connect('mongodb://127.0.0.1:27017/opar');
 
 var secret = "EIFJHSGUY235THGL6KN7W9L0UIHQW2R0QP5QOJ9SDLFU23GSI8U6HE4TJG8PW4OP9OY3JG6VD8BWYTD3IF0J";
 
+var models = {
+	user : require("./models/user").User,
+	medrec : require("./models/medrec").MedicalRecord,
+	appt : require("./models/appt").Appointment,
+	dept : require("./models/dept").Department,
+	schedule : require("./models/schedule").Schedule
+};
+
 var tokend;
 
-var jsonParser = bodyParser.json()
+var jsonParser = bodyParser.json();
 var urlencodedParser = bodyParser.urlencoded({ extended: true, limit: '20mb' });
 
 app.get('/', function(req, res) {
