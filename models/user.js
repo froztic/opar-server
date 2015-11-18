@@ -89,7 +89,7 @@ UserSchema.statics.login = function(data, callback) {
 	if(!data.username || !data.password) {
 		callback('input_error', 'incomplete input');
 	} else {
-		User.findOne({username : data.username, password : data.password}, {'username':1, 'priviledge':1}).lean().exec( function (err, res) {
+		User.findOne({username : data.username, password : data.password}, {'username':1, 'type':1, 'priviledge':1}).lean().exec( function (err, res) {
 			if(err) {
 				callback(err, 'db error');
 			} else if(!res) {
@@ -181,7 +181,36 @@ PatientSchema.statics.register = function(data, callback) {
 	}
 };
 
-PatientSchema.statics.getinfo = function(data, callback) {
+PatientSchema.statics.getinfo = function(data, token, callback) {
+	if(!data.patient_id) {
+		callback('input_error', 'incomplete input');
+	} else {
+		if(token.type === 'patient') {
+			if(token._id === data.petient_id) {
+				callback('no_priv_access', 'no priviledge');
+			} else {
+				Patient.findOne({ _id : token._id}, {'password':0, 'priviledge':0}).lean().exec( function(err, res) {
+					if(err) {
+						callback(err, 'db error');
+					} else if (!res) {
+						callback('not_found', 'not found');
+					} else {
+						callback(null, res);
+					}
+				});
+			}
+		} else {
+			Patient.findOne({ _id : data.patient_id}, {'password':0, 'priviledge':0}).lean().exec( function(err, res) {
+				if(err) {
+					callback(err,'db error');
+				} else if(!res) {
+					callback('not_found', 'not found');
+				} else {
+					callback(null, res);
+				}
+			});
+		}
+	}
 };
 
 PatientSchema.statics.getlist = function(data, callback) {
@@ -190,7 +219,7 @@ PatientSchema.statics.getlist = function(data, callback) {
 PatientSchema.statics.editinfo = function(data, callback) {
 };
 
-DoctorSchema.statics.getlist = function(data. callback) {
+DoctorSchema.statics.getlist = function(data, callback) {
 };
 
 //pack code into model

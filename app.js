@@ -35,10 +35,45 @@ app.get('/', function(req, res) {
 	}
 });
 
+app.get(/.*.getlist$/, function(req, res, next) {
+	
+});
+
 app.get('/patient.getlist', function(req, res) {
+	if(req.query._token) {
+		var ret = {
+			success : false,
+			msg : 'undefined'
+		};
+		logind.is_login(req.query._token, function(error, token) {
+			if(error) {
+				ret.success = false;
+				ret.msg = 'token error';
+				res.status(200).send(ret);
+			} else {
+				models.patient.getinfo(req.query, token, function(err, msg) {
+					if(err) {
+						ret.success = false;	
+						ret.msg = msg;
+					} else {
+						ret.success = true;
+						ret.msg = 'success';
+						ret.patient_obj = msg;
+					}
+					res.status(200).send(ret);
+				});
+			}
+		});
+	} else {
+		res.status(404).sendFile(__dirname + '/html/404.html');
+	}
 });
 
 app.get('/doctor.getlist', function(req, res) {
+	if(req.query._token) {
+	} else {
+		
+	}
 });
 
 app.get('/*', function(req, res) {
@@ -115,9 +150,15 @@ app.post('/patient.register', jsonParser, function(req, res) {
 		success: false,
 		msg: 'undefined'
 	};
-	console.log(req.body);
-	ret.username = req.body.username;
-	res.status(200).send(ret);
+	models.patient.register(req.body, function(err, msg) {
+		if(err) {
+			ret.success = false;
+		} else {
+			ret.success = true;
+		}
+		ret.msg = msg;
+		res.status(200).send(ret);
+	});
 });
 
 tokend = (function() {
