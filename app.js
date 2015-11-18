@@ -35,11 +35,7 @@ app.get('/', function(req, res) {
 	}
 });
 
-app.get(/.*.getlist$/, function(req, res, next) {
-	
-});
-
-app.get('/patient.getlist', function(req, res) {
+app.get('/patient.getinfo', function(req, res) {
 	if(req.query._token) {
 		var ret = {
 			success : false,
@@ -69,11 +65,23 @@ app.get('/patient.getlist', function(req, res) {
 	}
 });
 
-app.get('/doctor.getlist', function(req, res) {
+app.get(/.*.getlist$/, function(req, res, next) {
 	if(req.query._token) {
+		next();
 	} else {
-		
+		res.status(404).sendFile(__dirname + '/html/404.html');
 	}
+});
+
+app.get('/patient.getlist', function(req, res) {
+});
+
+app.get('/doctor.getlist', function(req, res) {
+	var ret = {
+		success : false,
+		msg : 'undefined'
+	};
+	
 });
 
 app.get('/*', function(req, res) {
@@ -158,6 +166,22 @@ app.post('/patient.register', jsonParser, function(req, res) {
 		}
 		ret.msg = msg;
 		res.status(200).send(ret);
+	});
+});
+
+app.post('/patient.editinfo', jsonParser, function(req, res) {
+	var ret = {
+		success: false,
+		msg : 'undefined'
+	};
+	logind.is_login_priv(req.body._token, 5, function(error, token) {
+		if(error) {
+			console.error(error);
+			ret.success = false;
+			ret.msg = 'token error';
+			res.status(200).send(ret);
+		} else {
+		}
 	});
 });
 

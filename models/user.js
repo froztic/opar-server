@@ -219,7 +219,12 @@ PatientSchema.statics.getlist = function(data, callback) {
 PatientSchema.statics.editinfo = function(data, callback) {
 };
 
-DoctorSchema.statics.getlist = function(data, callback) {
+DoctorSchema.statics.getlist = function(data, token, callback) {
+	if(!data.doctor_id) {
+		callback('input_error', 'incomplete input');
+	} else {
+		
+	}
 };
 
 //pack code into model
