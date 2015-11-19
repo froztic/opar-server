@@ -12,7 +12,7 @@ npm list
 
 required software
 + [mongodb](http://www.mongodb.com) v3.0.x
-+ [nodejs](httts://nodejs.org) v4.2.2 LTS
++ [nodejs](https://nodejs.org) v4.2.2 LTS
 
 clone : 
 ```sh
