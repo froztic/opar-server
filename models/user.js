@@ -223,7 +223,29 @@ DoctorSchema.statics.getlist = function(data, token, callback) {
 	if(!data.doctor_id) {
 		callback('input_error', 'incomplete input');
 	} else {
-		callback('error', 'not yet implemented');
+		Patient.aggregate({ 
+			$project: { 
+				name : { $concat : [ "$f_name", " ", "$l_name"] },
+				f_name : 1,
+				l_name : 1,
+				dept_id : 1,
+				speciality : 1
+			}
+		}).match({ name : {'$regex' : '/' + data.search_params + '/i'} })
+		.limit(50)
+		.populate({
+			path: 'dept_id',
+			select: 'name'
+		})
+		.lean().exec( function(err, res) {
+			if(err) {
+				callback(err, 'db error');
+			} else if (!res){
+				callback('no_data', 'not found');
+			} else {
+				callback(null, res);
+			}
+		});
 	}
 };
 
