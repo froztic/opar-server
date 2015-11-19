@@ -181,6 +181,9 @@ app.post('/patient.editinfo', jsonParser, function(req, res) {
 			ret.msg = 'token error';
 			res.status(200).send(ret);
 		} else {
+			ret.success = true;
+			ret.msg = 'success';
+			res.status(200).send(ret);
 		}
 	});
 });
@@ -212,14 +215,59 @@ logind = (function() {
 		is_login: function (token, callback) {
 			tokend.verify(token, function(err, res) {
 				if(err) {
-					callback(err, res);
+					callback('token', err);
 				} else {
 					callback(null, res);
 				}
 			});
 		},
 		is_login_priv: function (token, priv, callback) {
-			
+			tokend.verify(token, function(err, res) {
+				if(err) {
+					callback('token', err);
+				} else {
+					fs.readFile('data/user_priv.csv', function(err2, data) {
+						if(err2) {
+							callback('fs', err2);
+						} else {
+							var lines = data.toString().replace(/\r\n?/g, "\n").split("\n");
+							async.each(lines, function(line, cb) {
+								var word = line.split(",");
+								if(word[0] === priv.toString()) {
+									callback(word);
+								} else if(word[0] === "#") {
+									callback(null);
+								} else {
+									callback(null);
+								}
+							}, function(found) {
+								if(found) {
+									var slot = 1;
+									if(res.type === 'patient') {
+										slot = 2;
+									} else if(res.type === 'doctor') {	
+										slot = 3;
+									} else if(res.type === 'officer') {
+										slot = 4;
+									} else if(res.type === 'nurse') {
+										slot = 5;
+									} else if(res.type === 'pharmacy') {
+										slot = 6;
+									}
+									
+									if(found[slot] === 1) {
+										callback(null, res);
+									} else {
+										callback('priv', 'no priviledge');
+									}
+								} else {
+									callback('fs', 'not found');
+								}
+							});
+						}
+					});
+				}
+			});
 		}
 	}
 }());
