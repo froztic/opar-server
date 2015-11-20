@@ -74,17 +74,18 @@ app.get(/.*.getlist$/, function(req, res, next) {
 });
 
 app.get('/patient.getlist', function(req, res) {
+	var ret = {
+		success : false,
+		msg : 'undefined'
+	};
 	logind.is_login_priv(req.query._token, 30, function(error, token) {
-		var ret = {
-			success : false,
-			msg : 'undefined'
-		};
 		if(error) {
+			console.error(error)
 			ret.success = false;
-			ret.msg = 'token error';
+			ret.msg = token;
 			res.status(200).send(ret);
 		} else {
-			models.patient.getlist(req.query, token, function(err, msg) {
+			models.patient.getlist(req.query, function(err, msg) {
 				if(err) {
 					ret.success = false;
 					ret.msg = msg
@@ -164,6 +165,8 @@ app.post('/user.login', jsonParser, function(req, res) {
 				if(error) {
 					console.error('failed to create token');
 				} else {
+					delete ret.userObj.iat;
+					delete ret.userObj.iss;
 					ret._token = token;
 				}
 				res.status(200).send(ret);
@@ -235,11 +238,11 @@ app.post('/patient.editinfo', jsonParser, function(req, res) {
 		if(error) {
 			console.error(error);
 			ret.success = false;
-			ret.msg = 'token error';
+			ret.msg = token;
 			res.status(200).send(ret);
 		} else {
-			ret.success = true;
-			ret.msg = 'success';
+			ret.success = false;
+			ret.msg = 'not yet implemented';
 			res.status(200).send(ret);
 		}
 	});
@@ -272,7 +275,7 @@ logind = (function() {
 		is_login: function (token, callback) {
 			tokend.verify(token, function(err, res) {
 				if(err) {
-					callback('token', err);
+					callback(err, 'token error');
 				} else {
 					callback(null, res);
 				}
@@ -281,21 +284,21 @@ logind = (function() {
 		is_login_priv: function (token, priv, callback) {
 			tokend.verify(token, function(err, res) {
 				if(err) {
-					callback('token', err);
+					callback(err, 'token error');
 				} else {
 					fs.readFile('data/user_priv.csv', function(err2, data) {
 						if(err2) {
-							callback('fs', err2);
+							callback(err2, 'fs error');
 						} else {
 							var lines = data.toString().replace(/\r\n?/g, "\n").split("\n");
 							async.each(lines, function(line, cb) {
 								var word = line.split(",");
 								if(word[0] === priv.toString()) {
-									callback(word);
+									cb(word);
 								} else if(word[0] === "#") {
-									callback(null);
+									cb(null);
 								} else {
-									callback(null);
+									cb(null);
 								}
 							}, function(found) {
 								if(found) {
@@ -318,7 +321,7 @@ logind = (function() {
 										callback('priv', 'no priviledge');
 									}
 								} else {
-									callback('fs', 'not found');
+									callback('fs', 'priviledge not found');
 								}
 							});
 						}

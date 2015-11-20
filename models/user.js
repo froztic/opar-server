@@ -231,7 +231,7 @@ PatientSchema.statics.getlist = function(data, callback) {
 		}).match({ name: { $regex : '/' + data.search_params + '/i' } })
 		.sort('name')
 		.limit(50)
-		.lean().exec( function(err, res) {
+		.exec( function(err, res) {
 			if(err) {
 				callback(err, 'db error');
 			} else if(!res) {
@@ -244,13 +244,18 @@ PatientSchema.statics.getlist = function(data, callback) {
 };
 
 PatientSchema.statics.editinfo = function(data, callback) {
+	if(!data.patient_id || !data.patient_obj) {
+		callback('input_error', 'incomplete input');
+	} else {
+//		Patient.findOne({_id : data.patient_id}, 
+	}
 };
 
 DoctorSchema.statics.getlist = function(data, token, callback) {
 	if(!data.search_params || !data.search_type) {
 		callback('input_error', 'incomplete input');
 	} else {
-		if(search_type === 'name') {
+		if(data.search_type === 'name') {
 			Doctor.aggregate({ 
 				$project: { 
 					name : { $concat : [ "$f_name", " ", "$l_name"] },
@@ -261,22 +266,30 @@ DoctorSchema.statics.getlist = function(data, token, callback) {
 				}
 			}).match({ name : { $regex : '/' + data.search_params + '/i' } })
 			.limit(50)
-			.populate({
-				path: 'dept_id',
-				select: 'name'
-			})
+//			.populate({
+//				path: 'dept_id',
+//				select: 'name'
+//			})
 			.sort('name')
-			.sort('dept_id.name')
-			.lean().exec( function(err, res) {
+//			.sort('dept_id.name')
+			.exec( function(err, res) {
 				if(err) {
 					callback(err, 'db error');
 				} else if (!res){
 					callback('no_data', 'name not found');
 				} else {
-					callback(null, res);
+					Doctor.populate(res, {path:'dept_id', select: 'name'}, function(err2, res2) {
+						if(err2) {
+							callback(err2, 'db error');
+						} else if(!res2) {
+							callback('no_data_populate', 'populate error');
+						} else {
+							callback(null, res2);
+						}
+					});
 				}
 			});
-		} else if(search_type === 'dept') {
+		} else if(data.search_type === 'dept') {
 		} else {
 		}
 	}
