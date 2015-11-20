@@ -1,5 +1,7 @@
 var mongoose = require('mongoose');
 
+var Department = require("../models/dept").Department
+
 var options = { discriminatorKey : 'type' };
 
 var UserSchema = new mongoose.Schema({
@@ -55,7 +57,7 @@ var PatientSchema = new mongoose.Schema({
 var DoctorSchema = new mongoose.Schema({
 	dept_id : {
 		type : mongoose.Schema.Types.ObjectId,
-		ref : 'dept'
+		ref : Department
 	},
 	speciality : String,
 	priviledge : {
@@ -214,38 +216,69 @@ PatientSchema.statics.getinfo = function(data, token, callback) {
 };
 
 PatientSchema.statics.getlist = function(data, callback) {
+	if(!data.search_params) {
+		callback('input_error', 'incomplete input');
+	} else {
+		Patient.aggregate({
+			$project: {
+				name: { $concat : [ "$f_name", " ", "$l_name"] },
+				f_name : 1,
+				l_name : 1,
+				gender : 1,
+				national_id : 1,
+				country : 1
+			}
+		}).match({ name: { $regex : '/' + data.search_params + '/i' } })
+		.sort('name')
+		.limit(50)
+		.lean().exec( function(err, res) {
+			if(err) {
+				callback(err, 'db error');
+			} else if(!res) {
+				callback('no_data', 'name not found');
+			} else {
+				callback(null, res);
+			}
+		});
+	}
 };
 
 PatientSchema.statics.editinfo = function(data, callback) {
 };
 
 DoctorSchema.statics.getlist = function(data, token, callback) {
-	if(!data.doctor_id) {
+	if(!data.search_params || !data.search_type) {
 		callback('input_error', 'incomplete input');
 	} else {
-		Patient.aggregate({ 
-			$project: { 
-				name : { $concat : [ "$f_name", " ", "$l_name"] },
-				f_name : 1,
-				l_name : 1,
-				dept_id : 1,
-				speciality : 1
-			}
-		}).match({ name : {'$regex' : '/' + data.search_params + '/i'} })
-		.limit(50)
-		.populate({
-			path: 'dept_id',
-			select: 'name'
-		})
-		.lean().exec( function(err, res) {
-			if(err) {
-				callback(err, 'db error');
-			} else if (!res){
-				callback('no_data', 'not found');
-			} else {
-				callback(null, res);
-			}
-		});
+		if(search_type === 'name') {
+			Doctor.aggregate({ 
+				$project: { 
+					name : { $concat : [ "$f_name", " ", "$l_name"] },
+					f_name : 1,
+					l_name : 1,
+					dept_id : 1,
+					speciality : 1
+				}
+			}).match({ name : { $regex : '/' + data.search_params + '/i' } })
+			.limit(50)
+			.populate({
+				path: 'dept_id',
+				select: 'name'
+			})
+			.sort('name')
+			.sort('dept_id.name')
+			.lean().exec( function(err, res) {
+				if(err) {
+					callback(err, 'db error');
+				} else if (!res){
+					callback('no_data', 'name not found');
+				} else {
+					callback(null, res);
+				}
+			});
+		} else if(search_type === 'dept') {
+		} else {
+		}
 	}
 };
 

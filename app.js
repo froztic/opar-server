@@ -74,6 +74,29 @@ app.get(/.*.getlist$/, function(req, res, next) {
 });
 
 app.get('/patient.getlist', function(req, res) {
+	logind.is_login_priv(req.query._token, 30, function(error, token) {
+		var ret = {
+			success : false,
+			msg : 'undefined'
+		};
+		if(error) {
+			ret.success = false;
+			ret.msg = 'token error';
+			res.status(200).send(ret);
+		} else {
+			models.patient.getlist(req.query, token, function(err, msg) {
+				if(err) {
+					ret.success = false;
+					ret.msg = msg
+				} else { 
+					ret.success = true;
+					ret.msg = 'success';
+					ret.patient_list = msg;
+				}
+				res.status(200).send(ret);
+			});
+		}
+	});
 });
 
 app.get('/doctor.getlist', function(req, res) {
@@ -81,13 +104,13 @@ app.get('/doctor.getlist', function(req, res) {
 		success : false,
 		msg : 'undefined'
 	};
-	logind.is_login_priv(req.query._token, function(error, token) {
+	logind.is_login(req.query._token, function(error, token) {
 		if(error) {
 			ret.success = false;
 			ret.msg = 'token error';
 			res.status(200).send(ret);
 		} else {
-			models.doctor.getinfo(req.query, token, function(err, msg) {
+			models.doctor.getlist(req.query, token, function(err, msg) {
 				if(err) {
 					ret.success = false;
 					ret.msg = msg;
@@ -98,6 +121,22 @@ app.get('/doctor.getlist', function(req, res) {
 				}
 				res.status(200).send(ret);
 			});
+		}
+	});
+});
+
+app.get('/dept.getlist', function(req, res) {
+	var ret = {
+		success : false,
+		msg : 'undefined'
+	};
+	logind.is_login(req.query._token, function(error, token) {
+		if(error) {
+			ret.success = false;
+			ret.msg = 'token error';
+			res.status(200).send(ret);
+		} else {
+			res.status(200).send({success: false, msg: 'not implemented'});
 		}
 	});
 });
