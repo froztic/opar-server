@@ -112,6 +112,30 @@ AppointmentSchema.statics.edit = function(data, callback) {
 	}
 };
 
+AppointmentSchema.statics.removeappt = function(data, callback) {
+	if(!data.appt_id) {
+		callback('error', 'incomplete input');
+	} else {
+		Appointment.findOneAndRemove({_id: data.appt_id}).lean().exec(function (err, res) {
+			if(err) {
+				callback(err, 'db error');
+			} else if(!res) {
+				
+			} else {
+				Schedule.findOneAndUpdate({_id: res.schedule_id}, {$inc: {capacity:-1}}).lean().exec(function(err2, res2) {
+					if(err2) {
+						callback(err2, 'db error');
+					} else if(!res2) {
+						callback('error', '???');
+					} else {
+						callback(null, 'success');
+					}
+				});
+			}
+		});
+	}
+};
+
 var Appointment = mongoose.model('appt', AppointmentSchema);
 
 module.exports = {

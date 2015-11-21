@@ -263,6 +263,10 @@ app.post('/appt.create', jsonParser, function(req, res) {
 	};
 	logind.is_login_priv(req.body._token, 5, function(error, token) {
 		if(error) {
+			console.error(error);
+			ret.success = false;
+			ret.msg = token;
+			res.status(200).send(ret);
 		} else {
 			models.appt.create(data, token, function(err, msg) {
 				if(err) {
@@ -286,9 +290,30 @@ app.post('/appt.edit', jsonParser, function(req, res) {
 	};
 	logind.is_login_priv(req.body._token, 5, function(error, token) {
 		if(error) {
+			console.error(error);
+			ret.success = false;
+			ret.msg = token;
+			res.status(200).send(ret);
 		} else {
+			models.appt.edit(data, function(err, msg) {
+				if(err) {
+					ret.success = false;
+					ret.msg = msg;
+				} else {
+					ret.success = true;
+					ret.msg = 'success';
+				}
+				res.status(200).send(ret);
+			});
 		}
 	});
+});
+
+app.post('/appt.remove', jsonParser, function(req, res) {
+	var ret = {
+		success : false,
+		msg : 'unedfined'
+	};
 });
 
 tokend = (function() {
