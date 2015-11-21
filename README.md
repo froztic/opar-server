@@ -8,6 +8,7 @@ npm list
 	express
 	jwt
 	mongoose
+	cors
 ```
 
 required software

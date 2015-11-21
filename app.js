@@ -176,6 +176,9 @@ app.get('/medrec.getlist', function(req, res) {
 	});
 });
 
+app.get('/schedule.getlist', function(req, res) {
+});
+
 app.get('/schedule.search', function(req, res) {
 	var ret = {
 		success : false,
@@ -183,8 +186,21 @@ app.get('/schedule.search', function(req, res) {
 	};
 	logind.is_login_priv(req.query._token, 7, function(error, token) {
 		if(error) {
+			console.error(error);
+			ret.success = false;
+			ret.msg = token;
+			res.status(200).send(ret);
 		} else {
 			models.schedule.searchlist (req.query, function(err, msg) {
+				if(err) {
+					ret.success = false;
+					ret.msg = msg;
+				} else {
+					ret.success = true;
+					ret.msg = 'success';
+					ret.schedule_list = msg;
+				}
+				res.status(200).send(ret);
 			});
 		}
 	});
