@@ -11,10 +11,10 @@ DepartmentSchema.statics.getlist = function(search, callback) {
 	Department.find({}).lean().exec(function(err, res) {
 		if(err) {
 			callback(err, 'db error');
-		} else if (!res) {
-			callback(null, 'not found');
+//		} else if(!res) {
+//			callback('no_data', 'no data');
 		} else {
-			callback(null, 'success');
+			callback(null, res);
 		}
 	});
 };

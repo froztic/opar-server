@@ -25,23 +25,51 @@ ScheduleSchema.statics.search = function(data, callback) {
 		callback('input_err', 'incomplete input');
 	} else {
 		if(data.type === 'doctor') {
-			
+			Schedule.find({doctor_id : data.object_id, start_time: Date.now()}).limit(50).lean().exec(function(err, res) {
+				if(err) {
+					callback(err, 'db error');
+				} else if(!res) {
+					callback('no_schedule', 'no schedule found');
+				} else {
+					callback(null, res);
+				}
+			});
 		} else if(data.type === 'dept') {
 			DoctorDept.find({dept_id : data.object_id}, {doctor_id:1 , _id : 0}).lean().exec(function(err, res) {
 				if(err) {
+					callback(err, 'db error');
 				} else if(!res) {
+					callback('no_dept', 'department not found');
 				} else {
-					var ids = {"$or": []};
+					var search_ids = {"$or": []};
 					async.each(res, function(id) {
-						ids["$or"].push({"doctor_id": id.doctor_id});
+						search_ids["$or"].push({"doctor_id": id.doctor_id});
 					});
-					callback('err', 'not finished');
+					search_ids.start_time = {"$lt":Date.now()};
+					Schedule.find(search_ids).sort('start_time').limit(50).lean().exec(function(err2, res2) {
+						if(err2) {
+							callback(err2, 'db error');
+						} else if(!res2) {
+							callback('no_schedule', 'no schedule found');
+						} else {
+							callback(null, res2);
+						}
+					});
 				}
 			});
 		} else {
 			callback('incorrect_type', 'incorrect search type');
 		}
 	}
+};
+
+ScheduleSchema.statics.addschedule = function(data, token, callback) {
+};
+
+ScheduleSchema.statics.edit = function(data, callback) {
+};
+
+ScheduleSchema.statics.removeschedule = function(data, callback) {
 };
 
 var Schedule = mongoose.model('schedule', ScheduleSchema);
