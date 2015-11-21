@@ -314,6 +314,25 @@ app.post('/appt.remove', jsonParser, function(req, res) {
 		success : false,
 		msg : 'unedfined'
 	};
+	logind.is_login_priv(req.body._token, 5, function(error, token) {
+		if(error) {
+			console.error(error);
+			ret.success = false;
+			ret.msg = token;
+			res.status(200).send(ret);
+		} else {
+			models.appt.removeappt(data, function(err, msg) {
+				if(err) {
+					ret.success = false;
+					ret.msg = msg;
+				} else {
+					ret.success = true;
+					ret.msg = 'success';
+				}
+				res.status(200).send(ret);
+			});
+		}
+	});
 });
 
 tokend = (function() {
