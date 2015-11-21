@@ -28,7 +28,7 @@ DoctorDeptSchema.statics.create = function(doctor, dept, callback) {
 			callback(null, 'success');
 		}
 	});
-});
+};
 
 
 var DoctorDept = mongoose.model('doctordept', DoctorDeptSchema);

@@ -6,6 +6,7 @@ var http = require('http').Server(app);
 var mongoose = require('mongoose');
 var jwt = require('jsonwebtoken');
 var async = require('async');
+var cors = require('cors');
 
 mongoose.connect('mongodb://127.0.0.1:27017/opar');
 
@@ -25,6 +26,12 @@ var tokend;
 
 var jsonParser = bodyParser.json();
 var urlencodedParser = bodyParser.urlencoded({ extended: true, limit: '20mb' });
+
+app.use(cors({
+	origin : "*",
+//	origin : "http://opar.froztic.in.th",
+	methods : "GET,POST"
+}));
 
 app.get('/', function(req, res) {
 	res.sendFile(__dirname + '/html/index.html');

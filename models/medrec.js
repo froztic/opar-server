@@ -32,7 +32,45 @@ var MedRecSchema = new mongoose.Schema({
 	disease_code : String
 });
 
+MedRecSchema.statics.getlist = function(data, token, callback) {
+	if(!data.patient_id) {
+		callback('error', 'incomplete input');
+	} else if(token.type === 'patient' && token._id !== data.patient_id) {
+		callback('err_no_priv', 'no priviledge');
+	} else {
+		MedicalRecord.find({patient_id : data.patient_id})
+		.populate({path: 'patient_id doctor_id pharmacy_id nurse_id', select: 'f_name l_name'}).exec(function (err, res) {
+			if(err) {
+				callback(err, 'db error');
+			} else if(!res) {
+				callback('no_data', 'data not found');
+			} else {
+				callback(null, 'success');
+			}
+		});
 
+	}
+};
+
+MedRecSchema.statics.addrec = function(data, token, callback) {
+//	if(false) {
+//	} else {
+	var new_record = new MedicalRecord({
+		patient_id : data.patient_id,
+		doctor_id : token._id,
+		pharmacy_id : data.pharmacy_id,
+		nurse_id : data.nurse_id,
+		body_weight : data.body_weight,
+		body_height : data.body_height,
+		body_temp : data.body_temp,
+		heart_pulse : data.heart_pulse,
+		blood_pressure : data.blood_pressure,
+		symptom : data.symptom,
+		disease_code : data.disease_code
+	});
+	
+//	}
+};
 
 //pack code into model
 var MedicalRecord = mongoose.model('medrec', MedRecSchema);
