@@ -12,7 +12,6 @@ var UserSchema = new mongoose.Schema({
 	password : String,
 	email : String,
 	phone : String,
-	avatar_url : String,
 	f_name : String,
 	l_name : String,
 	gender : String,
@@ -29,9 +28,6 @@ var PatientSchema = new mongoose.Schema({
 	}, 
 	birthday : Date,
 	address : String,
-	province : String,
-	zip_code : Number,
-	country : String,
 	blood_type : {
 		type : String,
 		enum : ['A', 'B', 'AB', 'O']
@@ -59,7 +55,6 @@ var DoctorSchema = new mongoose.Schema({
 		type : mongoose.Schema.Types.ObjectId,
 		ref : Department
 	},
-	speciality : String,
 	priviledge : {
 		type : Number,
 		default : 2
@@ -158,9 +153,6 @@ PatientSchema.statics.register = function(data, callback) {
 							birthday : data.birthday,
 							gender : data.gender,
 							address : data.address,
-							province : data.province,
-							zip_code : data.zip_code,
-							country : data.country,
 							blood_type : data.blood_type,
 							drug_hist : data.drug_hist
 //							allergy : data.allergy
@@ -243,11 +235,30 @@ PatientSchema.statics.getlist = function(data, callback) {
 	}
 };
 
-PatientSchema.statics.editinfo = function(data, callback) {
+PatientSchema.statics.editinfo = function(data, token, callback) {
 	if(!data.patient_id || !data.patient_obj) {
 		callback('input_error', 'incomplete input');
+	} else if(token.type === 'patient' && data.patient_id !== token._id) {
+		callback('user_priv_err', 'no priviledge');
 	} else {
-//		Patient.findOne({_id : data.patient_id}, 
+		var obj = data.patient_obj
+		Patient.findOneAndUpdate({_id : data.patient_id}, {
+			email : obj.email,
+			f_name : obj.f_name,
+			l_name : obj.l_name,
+			phone : obj.phone,
+			gender : obj.gender,
+			address : obj.address,
+			drug_hist : obj.drug_hist
+		}, {username:1}).lean().exec(function (err, res) {
+			if(err) {
+				callback(err, 'db error');
+			} else if(!res) {
+				callback('no_user', 'user not found');
+			} else {
+				callback(null, 'success');
+			}
+		});
 	}
 };
 
@@ -255,43 +266,39 @@ DoctorSchema.statics.getlist = function(data, token, callback) {
 	if(!data.search_params || !data.search_type) {
 		callback('input_error', 'incomplete input');
 	} else {
-		if(data.search_type === 'name') {
-			Doctor.aggregate({ 
-				$project: { 
-					name : { $concat : [ "$f_name", " ", "$l_name"] },
-					f_name : 1,
-					l_name : 1,
-					dept_id : 1,
-					speciality : 1
-				}
-			}).match({ name : { $regex : '/' + data.search_params + '/i' } })
-			.limit(50)
-//			.populate({
-//				path: 'dept_id',
-//				select: 'name'
-//			})
-			.sort('name')
-//			.sort('dept_id.name')
-			.exec( function(err, res) {
-				if(err) {
-					callback(err, 'db error');
-				} else if (!res){
-					callback('no_data', 'name not found');
-				} else {
-					Doctor.populate(res, {path:'dept_id', select: 'name'}, function(err2, res2) {
-						if(err2) {
-							callback(err2, 'db error');
-						} else if(!res2) {
-							callback('no_data_populate', 'populate error');
-						} else {
-							callback(null, res2);
+		Doctor.aggregate({ 
+			$project: { 
+				name : { $concat : [ "$f_name", " ", "$l_name"] },
+				f_name : 1,
+				l_name : 1,
+				dept_id : 1
+			}
+		}).match({ name : { $regex : '/' + data.search_params + '/i' } })
+		.limit(50)
+//		.populate({
+//			path: 'dept_id',
+//			select: 'name'
+//		})
+		.sort('name')
+//		.sort('dept_id.name')
+		.exec( function(err, res) {
+			if(err) {
+				callback(err, 'db error');
+			} else if (!res){
+				callback('no_data', 'name not found');
+			} else {
+				
+				Doctor.populate(res, {path:'dept_id', select: 'name'}, function(err2, res2) {
+					if(err2) {
+						callback(err2, 'db error');
+					} else if(!res2) {
+						callback('no_data_populate', 'populate error');
+					} else {
+						callback(null, res2);
 						}
-					});
-				}
-			});
-		} else if(data.search_type === 'dept') {
-		} else {
-		}
+				});
+			}
+		});
 	}
 };
 

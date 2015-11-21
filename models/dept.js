@@ -6,8 +6,9 @@ var DepartmentSchema = new mongoose.Schema({
 	location : String
 });
 
-DepartmentSchema.statics.getdeptlist = function(search, callback) {
-	Department.find({name : {$regex: search, $options: 'i'}}).lean().exec(function(err, res) {
+DepartmentSchema.statics.getlist = function(search, callback) {
+//	Department.find({name : {$regex: search, $options: 'i'}}).lean().exec(function(err, res) {
+	Department.find({}).lean().exec(function(err, res) {
 		if(err) {
 			callback(err, 'db error');
 		} else if (!res) {

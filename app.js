@@ -88,7 +88,7 @@ app.get('/patient.getlist', function(req, res) {
 			models.patient.getlist(req.query, function(err, msg) {
 				if(err) {
 					ret.success = false;
-					ret.msg = msg
+					ret.msg = msg;
 				} else { 
 					ret.success = true;
 					ret.msg = 'success';
@@ -137,7 +137,7 @@ app.get('/dept.getlist', function(req, res) {
 			ret.msg = 'token error';
 			res.status(200).send(ret);
 		} else {
-			res.status(200).send({success: false, msg: 'not implemented'});
+			res.status(200).send({success: false, msg: 'not yet implemented'});
 		}
 	});
 });
@@ -241,9 +241,52 @@ app.post('/patient.editinfo', jsonParser, function(req, res) {
 			ret.msg = token;
 			res.status(200).send(ret);
 		} else {
-			ret.success = false;
-			ret.msg = 'not yet implemented';
-			res.status(200).send(ret);
+			models.patient.editinfo(data, token, function(err, msg) {
+				if(err) {	
+					console.error(err);
+					ret.success = false;	
+					ret.msg = msg;
+				} else {
+					ret.success = true;
+					ret.msg = 'success';
+				}
+				res.status(200).send(ret);
+			});
+		}
+	});
+});
+
+app.post('/appt.create', jsonParser, function(req, res) {
+	var ret = {
+		success : false,
+		msg : 'undefined'
+	};
+	logind.is_login_priv(req.body._token, 5, function(error, token) {
+		if(error) {
+		} else {
+			models.appt.create(data, token, function(err, msg) {
+				if(err) {
+					console.error(err);
+					ret.success = false;
+					ret.msg = msg;
+				} else {
+					ret.success = true;
+					ret.msg = 'success';
+				}
+				res.status(200).send(ret);
+			});
+		}
+	});
+});
+
+app.post('/appt.edit', jsonParser, function(req, res) {
+	var ret = {
+		success : false,
+		msg : 'undefined'
+	};
+	logind.is_login_priv(req.body._token, 5, function(error, token) {
+		if(error) {
+		} else {
 		}
 	});
 });
