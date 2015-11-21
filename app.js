@@ -161,7 +161,7 @@ app.get('/medrec.getlist', function(req, res) {
 			ret.msg = token;
 			res.status(200).send(ret);
 		} else {
-			models.medrec.getlist(data, token, function(err, msg) {
+			models.medrec.getlist(req.query, token, function(err, msg) {
 				if(err) {
 					ret.success = false;
 					ret.msg = msg;
@@ -171,6 +171,20 @@ app.get('/medrec.getlist', function(req, res) {
 					ret.medrec_list = msg;
 				}
 				res.status(200).send(ret);
+			});
+		}
+	});
+});
+
+app.get('/schedule.search', function(req, res) {
+	var ret = {
+		success : false,
+		msg : 'undefined'
+	};
+	logind.is_login_priv(req.query._token, 7, function(error, token) {
+		if(error) {
+		} else {
+			models.schedule.searchlist (req.query, function(err, msg) {
 			});
 		}
 	});
@@ -277,7 +291,7 @@ app.post('/patient.editinfo', jsonParser, function(req, res) {
 			ret.msg = token;
 			res.status(200).send(ret);
 		} else {
-			models.patient.editinfo(data, token, function(err, msg) {
+			models.patient.editinfo(req.body, token, function(err, msg) {
 				if(err) {	
 					console.error(err);
 					ret.success = false;	
@@ -338,7 +352,7 @@ app.post('/appt.create', jsonParser, function(req, res) {
 			ret.msg = token;
 			res.status(200).send(ret);
 		} else {
-			models.appt.create(data, token, function(err, msg) {
+			models.appt.create(req.body, token, function(err, msg) {
 				if(err) {
 					console.error(err);
 					ret.success = false;
@@ -365,7 +379,7 @@ app.post('/appt.edit', jsonParser, function(req, res) {
 			ret.msg = token;
 			res.status(200).send(ret);
 		} else {
-			models.appt.edit(data, function(err, msg) {
+			models.appt.edit(req.body, function(err, msg) {
 				if(err) {
 					ret.success = false;
 					ret.msg = msg;
@@ -391,7 +405,7 @@ app.post('/appt.remove', jsonParser, function(req, res) {
 			ret.msg = token;
 			res.status(200).send(ret);
 		} else {
-			models.appt.removeappt(data, function(err, msg) {
+			models.appt.removeappt(req.body, function(err, msg) {
 				if(err) {
 					ret.success = false;
 					ret.msg = msg;
