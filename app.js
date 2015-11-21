@@ -161,7 +161,17 @@ app.get('/medrec.getlist', function(req, res) {
 			ret.msg = token;
 			res.status(200).send(ret);
 		} else {
-			res.status(200).send({success: false, msg: 'not yet implemented'});
+			models.medrec.getlist(data, token, function(err, msg) {
+				if(err) {
+					ret.success = false;
+					ret.msg = msg;
+				} else {
+					ret.success = true;
+					ret.msg = 'success';
+					ret.medrec_list = msg;
+				}
+				res.status(200).send(ret);
+			});
 		}
 	});
 });

@@ -45,7 +45,7 @@ MedRecSchema.statics.getlist = function(data, token, callback) {
 			} else if(!res) {
 				callback('no_data', 'data not found');
 			} else {
-				callback(null, 'success');
+				callback(null, res);
 			}
 		});
 
