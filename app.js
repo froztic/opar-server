@@ -149,6 +149,25 @@ app.get('/dept.getlist', function(req, res) {
 	});
 });
 
+app.get('/medrec.getlist', function(req, res) {
+	var ret = {
+		success : false,
+		msg : 'undefined'
+	};
+	logind.is_login_priv(req.query._token, 27, function(error, token) {
+		if(error) {
+			console.error(error);
+			ret.success = false;
+			ret.msg = token;
+			res.status(200).send(ret);
+		} else {
+			res.status(200).send({success: false, msg: 'not yet implemented'});
+		}
+	});
+});
+
+//app.use('/web', express.static(__dirname + '/html');
+
 app.get('/*', function(req, res) {
 	res.status(404).sendFile(__dirname + '/html/404.html');
 });
@@ -263,6 +282,40 @@ app.post('/patient.editinfo', jsonParser, function(req, res) {
 	});
 });
 
+app.post('/medrec.add', jsonParser, function(req, res) {
+	var ret = {
+		success : false,
+		msg : 'undefined'
+	};
+	logind.is_login_priv(req.body._token, 10, function(error, token) {
+		if(error) {
+			console.error(error);
+			ret.success = false;
+			ret.msg = token;
+			res.status(200).send(ret);
+		} else {
+
+		}
+	});
+});
+
+app.post('/medrec.edit', jsonParser, function(req, res) {
+	var ret = {
+		success : false,
+		msg : 'undefined'
+	};
+	logind.is_login_priv(req.body._token, 10, function(error, token) {
+		if(error) {
+			console.error(error);
+			ret.success = false;
+			ret.msg = token;
+			res.status(200).send(ret);
+		} else {
+
+		}
+	});
+});
+
 app.post('/appt.create', jsonParser, function(req, res) {
 	var ret = {
 		success : false,
@@ -338,6 +391,56 @@ app.post('/appt.remove', jsonParser, function(req, res) {
 				}
 				res.status(200).send(ret);
 			});
+		}
+	});
+});
+
+app.post('/schedule.add', jsonParser, function(req, res) {
+	var ret = {
+		success : false,
+		msg : 'undefined'
+	};
+	logind.is_login_priv(req.body._token, 6, function(error, token) {
+		if(error) {
+			console.error(error);
+			ret.success = false;
+			ret.msg = token;
+			res.status(200).send(ret);
+		} else {
+
+		}
+	});
+});
+
+app.post('/schedule.edit', jsonParser, function(req, res) {
+	var ret = {
+		success : false,
+		msg : 'undefined'
+	};
+	logind.is_login_priv(req.body._token, 6, function(error, token) {
+		if(error) {
+			console.error(error);
+			ret.success = false;
+			ret.msg = token;
+			res.status(200).send(ret);
+		} else {
+
+		}
+	});
+});
+app.post('/schedule.remove', jsonParser, function(req, res) {
+	var ret = {
+		success : false,
+		msg : 'undefined'
+	};
+	logind.is_login_priv(req.body._token, 6, function(error, token) {
+		if(error) {
+			console.error(error);
+			ret.success = false;
+			ret.msg = token;
+			res.status(200).send(ret);
+		} else {
+			
 		}
 	});
 });
