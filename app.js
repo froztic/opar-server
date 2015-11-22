@@ -144,7 +144,17 @@ app.get('/dept.getlist', function(req, res) {
 			ret.msg = 'token error';
 			res.status(200).send(ret);
 		} else {
-			res.status(200).send({success: false, msg: 'not yet implemented'});
+			models.dept.getlist(function(err, msg) {
+				if(err) {
+					ret.success = false;
+					ret.msg = msg;
+				} else {
+					ret.success = true;
+					ret.msg = 'success';
+					ret.dept_list = msg;
+				}
+				res.status(200).send(ret);
+			});
 		}
 	});
 });

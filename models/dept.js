@@ -6,7 +6,7 @@ var DepartmentSchema = new mongoose.Schema({
 	location : String
 });
 
-DepartmentSchema.statics.getlist = function(search, callback) {
+DepartmentSchema.statics.getlist = function(callback) {
 //	Department.find({name : {$regex: search, $options: 'i'}}).lean().exec(function(err, res) {
 	Department.find({}).lean().exec(function(err, res) {
 		if(err) {
@@ -17,6 +17,9 @@ DepartmentSchema.statics.getlist = function(search, callback) {
 			callback(null, res);
 		}
 	});
+};
+
+DepartmentSchema.statics.adddept = function(data, callback) {
 };
 
 var Department = mongoose.model('dept', DepartmentSchema);
