@@ -2,7 +2,10 @@ var mongoose = require('mongoose');
 var async = require('async');
 
 var DepartmentSchema = new mongoose.Schema({
-	name : String,
+	name : {
+		type : String,
+		index : true
+	},
 	location : String
 });
 
@@ -20,6 +23,21 @@ DepartmentSchema.statics.getlist = function(callback) {
 };
 
 DepartmentSchema.statics.adddept = function(data, callback) {
+	if(!data.name) {
+		callback('input_err', 'incomplete input');
+	} else {
+		var new_dept = Demartment({
+			name : data.name,
+			location : data.location
+		});
+		new_dept.save(function (err, res) {
+			if(err) {
+				callback(err, 'cannot save');
+			} else {
+				callback(null, 'success');
+			}
+		});
+	}
 };
 
 var Department = mongoose.model('dept', DepartmentSchema);

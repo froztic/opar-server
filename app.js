@@ -24,9 +24,11 @@ var models = {
 
 var tokend;
 
-var jsonParser = bodyParser.json();
-var urlencodedParser = bodyParser.urlencoded({ extended: true, limit: '20mb' });
 
+//var parser = bodyParser.json();
+var parser = bodyParser.urlencoded({ extended: true, limit: '20mb' });
+
+app.use(parser);
 app.use(cors({
 	origin : "*",
 //	origin : "http://opar.froztic.in.th",
@@ -222,7 +224,7 @@ app.get('/*', function(req, res) {
 	res.status(404).sendFile(__dirname + '/html/404.html');
 });
 
-app.post('/user.login', jsonParser, function(req, res) {
+app.post('/user.login', function(req, res) {
 	var ret = {
 		success: false,
 		msg: 'undefined'
@@ -257,7 +259,7 @@ app.post('/user.login', jsonParser, function(req, res) {
 	});
 });
 
-app.post('/user.recover', jsonParser, function(req, res) {
+app.post('/user.recover', function(req, res) {
 	var ret = {
 		success: false,
 		msg: 'undefined'
@@ -269,7 +271,7 @@ app.post('/user.recover', jsonParser, function(req, res) {
 	});
 });
 
-app.post('/user.changepass', jsonParser, function(req, res) {
+app.post('/user.changepass', function(req, res) {
 	var ret = {
 		success : false,
 		msg : 'undefined'
@@ -297,7 +299,7 @@ app.post('/user.changepass', jsonParser, function(req, res) {
 	});
 });
 
-app.post('/patient.register', jsonParser, function(req, res) {
+app.post('/patient.register', function(req, res) {
 	var ret = {
 		success: false,
 		msg: 'undefined'
@@ -316,7 +318,7 @@ app.post('/patient.register', jsonParser, function(req, res) {
 	});
 });
 
-app.post('/patient.editinfo', jsonParser, function(req, res) {
+app.post('/patient.editinfo', function(req, res) {
 	var ret = {
 		success: false,
 		msg : 'undefined'
@@ -343,7 +345,7 @@ app.post('/patient.editinfo', jsonParser, function(req, res) {
 	});
 });
 
-app.post('/doctor.register', jsonParser, function(req, res) {
+app.post('/doctor.register', function(req, res) {
 	var ret = {
 		success : false,
 		msg : 'undefined'
@@ -363,7 +365,33 @@ app.post('/doctor.register', jsonParser, function(req, res) {
 	});
 });
 
-app.post('/medrec.add', jsonParser, function(req, res) {
+app.post('/dept.add', function(req, res) {
+	var ret = {
+		success : false,
+		msg : 'undefined'
+	};
+	logind.is_login(req.body._token, function(error, token) {
+		if(error) {
+			console.error(error);
+			ret.success = false;
+			ret.msg = token;
+			res.status(200).send(ret);
+		} else {
+			models.dept.adddept(req.body, function(err, msg) {
+				if(err) {
+					ret.success = false;
+					ret.msg = msg;
+				} else {
+					ret.success = true;
+					ret.msg = 'success';
+				}
+				res.status(200).send(ret);
+			});
+		}
+	});
+});
+
+app.post('/medrec.add', function(req, res) {
 	var ret = {
 		success : false,
 		msg : 'undefined'
@@ -380,7 +408,7 @@ app.post('/medrec.add', jsonParser, function(req, res) {
 	});
 });
 
-app.post('/medrec.edit', jsonParser, function(req, res) {
+app.post('/medrec.edit', function(req, res) {
 	var ret = {
 		success : false,
 		msg : 'undefined'
@@ -397,7 +425,7 @@ app.post('/medrec.edit', jsonParser, function(req, res) {
 	});
 });
 
-app.post('/appt.create', jsonParser, function(req, res) {
+app.post('/appt.create', function(req, res) {
 	var ret = {
 		success : false,
 		msg : 'undefined'
@@ -424,7 +452,7 @@ app.post('/appt.create', jsonParser, function(req, res) {
 	});
 });
 
-app.post('/appt.edit', jsonParser, function(req, res) {
+app.post('/appt.edit', function(req, res) {
 	var ret = {
 		success : false,
 		msg : 'undefined'
@@ -450,7 +478,7 @@ app.post('/appt.edit', jsonParser, function(req, res) {
 	});
 });
 
-app.post('/appt.remove', jsonParser, function(req, res) {
+app.post('/appt.remove', function(req, res) {
 	var ret = {
 		success : false,
 		msg : 'unedfined'
@@ -476,7 +504,7 @@ app.post('/appt.remove', jsonParser, function(req, res) {
 	});
 });
 
-app.post('/schedule.add', jsonParser, function(req, res) {
+app.post('/schedule.add', function(req, res) {
 	var ret = {
 		success : false,
 		msg : 'undefined'
@@ -493,7 +521,7 @@ app.post('/schedule.add', jsonParser, function(req, res) {
 	});
 });
 
-app.post('/schedule.edit', jsonParser, function(req, res) {
+app.post('/schedule.edit', function(req, res) {
 	var ret = {
 		success : false,
 		msg : 'undefined'
@@ -509,7 +537,7 @@ app.post('/schedule.edit', jsonParser, function(req, res) {
 		}
 	});
 });
-app.post('/schedule.remove', jsonParser, function(req, res) {
+app.post('/schedule.remove', function(req, res) {
 	var ret = {
 		success : false,
 		msg : 'undefined'
