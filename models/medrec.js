@@ -14,14 +14,14 @@ var MedRecSchema = new mongoose.Schema({
 		type : mongoose.Schema.Types.ObjectId,
 		ref : Doctor
 	},
-	pharmacy_id : {
-		type : mongoose.Schema.Types.ObjectId,
-		ref : Pharmacy
-	},
-	nurse_id : {
-		type : mongoose.Schema.Types.ObjectId,
-		ref : Nurse
-	}, 
+//	pharmacy_id : {
+//		type : mongoose.Schema.Types.ObjectId,
+//		ref : Pharmacy
+//	},
+//	nurse_id : {
+//		type : mongoose.Schema.Types.ObjectId,
+//		ref : Nurse
+//	}, 
 	record_date : Date,
 	body_weight : Number,
 	body_height : Number,
@@ -58,8 +58,8 @@ MedRecSchema.statics.addrec = function(data, token, callback) {
 	var new_record = new MedicalRecord({
 		patient_id : data.patient_id,
 		doctor_id : token._id,
-		pharmacy_id : data.pharmacy_id,
-		nurse_id : data.nurse_id,
+//		pharmacy_id : data.pharmacy_id,
+//		nurse_id : data.nurse_id,
 		body_weight : data.body_weight,
 		body_height : data.body_height,
 		body_temp : data.body_temp,

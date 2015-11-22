@@ -30,7 +30,7 @@ DepartmentSchema.statics.adddept = function(data, callback) {
 	if(!data.name) {
 		callback('input_err', 'incomplete input');
 	} else {
-		var new_dept = Demartment({
+		var new_dept = Department({
 			_id : data.dept_id,
 			name : data.name,
 			location : data.location

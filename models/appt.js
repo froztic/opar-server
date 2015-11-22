@@ -31,6 +31,51 @@ var AppointmentSchema = new mongoose.Schema({
 	description : String
 });
 
+AppointmentSchema.statics.getlist = function(data, token, callback) {
+	if(!data.type || !data.user_id) {
+		callback('error', 'incomplete input');
+	} else {
+		if(data.type === 'patient') {
+			if(token.type === 'patient' && data.user_id !== token._id) {
+				callback('no_priv', 'no priviledge');
+			} else {
+				Appointment.find({patient_id : data.user_id, is_attend : false})
+				.populate({path : 'schedule_id', select : 'start_time end_time'})
+				.find({'dept_id.start_time' : {$gte: Date.now()} })
+//				.project({dept_id.start_time : {$gte: Date.now()}})
+				.sort('dept_id.start_time').skip(data.skip).limit(data.limit).lean().exec(function(err, res) {
+					if(err) {
+						callback(err, 'db error');
+					} else if(!res) {
+						callback('no_data', 'not found');
+					} else {
+						callback(null, res);
+					}
+				});
+			}
+		} else if(data.type === 'doctor') {
+			if(token.type === 'patient') {
+				callback('no_priv', 'no priviledge');
+			} else {
+				Appointment.find({doctor_id : data.user_id, is_attend : false})
+				.populate({path : 'schedule_id', select : 'start_time end_time'})
+				.find({'dept_id.start_time' : {$gte: Date.now()} })
+				.sort('dept_id.start_time').skip(data.skip).limit(data.limit).lean().exec(function(err, res) {
+					if(err) {
+						callback(err, 'db error');
+					} else if(!res) {
+						callback('no_data', 'not found');
+					} else {
+						callback(null, res);
+					}
+				});
+			}
+		} else {
+			callback('invalid_input', 'type error');
+		}
+	}
+};
+
 AppointmentSchema.statics.create = function(data, token, callback) {
 	if(!data.doctor_id || !data.dept_id || !data.schedule_id) {
 		callback('error', 'incomplete input');

@@ -141,12 +141,12 @@ app.get('/dept.getlist', function(req, res) {
 		success : false,
 		msg : 'undefined'
 	};
-	logind.is_login(req.query._token, function(error, token) {
-		if(error) {
-			ret.success = false;
-			ret.msg = 'token error';
-			res.status(200).send(ret);
-		} else {
+//	logind.is_login(req.query._token, function(error, token) {
+//		if(error) {
+//			ret.success = false;
+//			ret.msg = 'token error';
+//			res.status(200).send(ret);
+//		} else {
 			models.dept.getlist(function(err, msg) {
 				if(err) {
 					ret.success = false;
@@ -158,8 +158,8 @@ app.get('/dept.getlist', function(req, res) {
 				}
 				res.status(200).send(ret);
 			});
-		}
-	});
+//		}
+//	});
 });
 
 app.get('/medrec.getlist', function(req, res) {
@@ -182,6 +182,31 @@ app.get('/medrec.getlist', function(req, res) {
 					ret.success = true;
 					ret.msg = 'success';
 					ret.medrec_list = msg;
+				}
+				res.status(200).send(ret);
+			});
+		}
+	});
+});
+
+app.get('/appt.getlist', function(req, res) {
+	var ret = {
+	};
+	logind.is_login_priv(req.query._token, 5, function(error, token) {
+		if(error) {
+			ret.success = false;
+			ret.msg =token;	
+			res.statius(200).send(ret);
+		} else {
+			models.appt.getlist(req.query, token, function(err, msg) {
+				if(err) {
+					console.error(err);
+					ret.success = false;
+					ret.msg = msg;
+				} else {
+					ret.success = true;
+					ret.msg = 'success';
+					ret.appt_list = msg;
 				}
 				res.status(200).send(ret);
 			});
@@ -368,7 +393,7 @@ app.post('/doctor.register', function(req, res) {
 	});
 });
 
-app.post('/officer.register', function(req, rea) {
+app.post('/officer.register', function(req, res) {
 	var ret = {
 		success : false,
 		msg : 'undefined'
@@ -408,6 +433,7 @@ app.post('/dept.add', function(req, res) {
 		} else {
 			models.dept.adddept(req.body, function(err, msg) {
 				if(err) {
+					console.error(err);
 					ret.success = false;
 					ret.msg = msg;
 				} else {
