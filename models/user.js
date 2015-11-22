@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 
-var Department = require("../models/dept").Department
+var Department = require("../models/dept").Department;
+var DoctorDept = require("../models/doctordept").DoctorDept;
 
 var options = { discriminatorKey : 'type' };
 
@@ -48,7 +49,7 @@ var PatientSchema = new mongoose.Schema({
 
 var DoctorSchema = new mongoose.Schema({
 	dept_id : {
-		type : mongoose.Schema.Types.ObjectId,
+		type : String,
 		ref : Department
 	},
 	priviledge : {
@@ -127,7 +128,7 @@ UserSchema.statics.changepass = function(data, userObj, callback) {
 };
 
 PatientSchema.statics.register = function(data, callback) {
-	if(!data.national_id || !data.password) {
+	if(!data.national_id || !data.password || !data.email || data.email.indexOf("@") === -1) {
 		callback('input_error', 'incomplete input');
 	} else {
 		Patient.findOne({national_id : data.national_id}, {'username':1}).lean().exec( function(err, res) {
@@ -238,7 +239,7 @@ PatientSchema.statics.editinfo = function(data, token, callback) {
 	} else if(token.type === 'patient' && data.patient_id !== token._id) {
 		callback('user_priv_err', 'no priviledge');
 	} else {
-		var obj = data.patient_obj
+		var obj = data.patient_obj;
 		Patient.findOneAndUpdate({_id : data.patient_id}, {
 			email : obj.email,
 			f_name : obj.f_name,
@@ -300,7 +301,8 @@ DoctorSchema.statics.getlist = function(data, token, callback) {
 };
 
 DoctorSchema.statics.register = function(data, callback) {
-	if(!data.username || !data.password) {
+	if(!data.username || !data.password || !data.email || data.email.indexOf("@") === -1) {
+		callback('input_err', 'incomplete input');
 	} else {
 		User.findOne({username : data.usernmame}, {"username":1}).lean().exec(function(err, res) {
 			if(err) {
@@ -324,7 +326,13 @@ DoctorSchema.statics.register = function(data, callback) {
 							if(err3) {
 								callback(err3, 'cannot save');
 							} else {
-								callback(null, 'success');
+								DoctorDept.create(new_doctor._id, data.dept_id, function(err4, res4) {
+									if(err4) {
+										callback(err4, res4);
+									} else {
+										callback(null, 'success');
+									}
+								});
 							}
 						});
 					} else {
@@ -339,7 +347,42 @@ DoctorSchema.statics.register = function(data, callback) {
 };
 
 OfficerSchema.statics.register = function(data, callback) {
-	
+	if(!data.username || !data.password || !data.email || data.email.indexOf("@") === -1) {
+		callback('input_err', 'incomplete input');
+	} else {
+		User.findOne({username:data.username},{username:1}).lean().exec(function(err, res) {
+			if(err) {
+				callback(err, 'db error');
+			} else if(!res) {
+				User.findOne({email : data.email}, {"email":1}).lean().exec(function(err2, res2) {
+					if(err2) {
+						callback(err2, 'db error');
+					} else if(!res2) {
+						var new_officer = new Officer({
+							username : data.username,
+							password : data.password,
+							email : data.email,
+							phone : data.phone,
+							f_name : data.f_name,
+							l_name : data.l_name,
+							gender : data.gender
+						});
+						new_officer.save(function(err3, res3) {
+							if(err3) {
+								callback(err3, 'cannot save');
+							} else {
+								callback(null, 'success');
+							}
+						});
+					} else {
+						callback('email_in_use', 'email exist');
+					}
+				});
+			} else {
+				callback('username_in_use' , 'username exist');
+			}
+		});
+	}
 };
 
 //pack code into model

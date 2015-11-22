@@ -330,12 +330,14 @@ app.post('/patient.editinfo', function(req, res) {
 			ret.msg = token;
 			res.status(200).send(ret);
 		} else {
+			console.log('edit patient info : ' + req.body.patient_id);
 			models.patient.editinfo(req.body, token, function(err, msg) {
 				if(err) {	
 					console.error(err);
 					ret.success = false;	
 					ret.msg = msg;
 				} else {
+					console.log('success');
 					ret.success = true;
 					ret.msg = 'success';
 				}
@@ -350,7 +352,7 @@ app.post('/doctor.register', function(req, res) {
 		success : false,
 		msg : 'undefined'
 	};
-	console.log(req.body.username + ' is trying to register');
+	console.log(req.body.username + ' is trying to register as doctor');
 	models.doctor.register(req.body, function(err, msg) {
 		if(err) {
 			console.error('doctor register error : ' + err);
@@ -363,6 +365,32 @@ app.post('/doctor.register', function(req, res) {
 		}
 		res.status(200).send(ret);
 	});
+});
+
+app.post('/officer.register', function(req, rea) {
+	var ret = {
+		success : false,
+		msg : 'undefined'
+	};
+	console.log(req.body.username + ' is trying to register as officer');
+	models.officer.register(req.body, function(err, msg) {
+		if(err) {
+			console.error('failed : '+ err);
+			ret.success = success;
+			ret.msg = msg;
+		} else {
+			console.log('success');
+			ret.success = success;
+			ret.msg = 'success';
+		}
+		res.status(200).send(ret);
+	});
+});
+
+app.post('/nurse.register', function(req, res) {
+});
+
+app.post('/pharmacy.register', function(req, res) {
 });
 
 app.post('/dept.add', function(req, res) {
@@ -516,7 +544,18 @@ app.post('/schedule.add', function(req, res) {
 			ret.msg = token;
 			res.status(200).send(ret);
 		} else {
-
+			console.log(token.username + ' request to add schedule');
+			models.schedule.addschedule(req.body, token, function(err, msg) {
+				if(err) {
+					console.error('failed : ' + err);
+					ret.success = false;
+				} else {
+					console.log('success');
+					ret.success = true;
+				}
+				ret.msg = msg;
+				res.status(200).send(ret);
+			});
 		}
 	});
 });
@@ -621,7 +660,7 @@ logind = (function() {
 										slot = 6;
 									}
 									
-									if(found[slot] === 1) {
+									if(found[slot] === "1") {
 										callback(null, res);
 									} else {
 										callback('priv', 'no priviledge');

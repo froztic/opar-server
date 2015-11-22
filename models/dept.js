@@ -2,6 +2,10 @@ var mongoose = require('mongoose');
 var async = require('async');
 
 var DepartmentSchema = new mongoose.Schema({
+	_id : {
+		type : String,
+		index : true
+	},
 	name : {
 		type : String,
 		index : true

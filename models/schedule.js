@@ -80,6 +80,30 @@ ScheduleSchema.statics.getlist = function(data, callback) {
 };
 
 ScheduleSchema.statics.addschedule = function(data, token, callback) {
+	if(!data.doctor_id || !data.start_time || !data.end_time) {
+		callback('input_err', 'incomplete input');
+	} else {
+		Schedule.findOne({doctor_id : data.doctor_id, start_time : {$gte : data.start_time}, end_time : {$lte: data.end_time}}).lean(),exec(function(err, res) {
+			if(err) {
+				callback(err, 'db error');
+			} else if(!res) {
+				var new_time = new Schedule({
+					doctor_id : data.doctor_id,
+					start_time : data.start_time,
+					end_time : data.end_time
+				});
+				new_time.save(function(err2, res2) {
+					if(err2) {
+						callback(err2, 'save error');
+					} else {
+						callback(null, 'success');
+					}
+				});
+			} else {
+				callback('time_conflict', 'schedule conflict');
+			}
+		});
+	}
 };
 
 ScheduleSchema.statics.edit = function(data, callback) {

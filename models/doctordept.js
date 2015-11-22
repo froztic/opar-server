@@ -10,7 +10,7 @@ var DoctorDeptSchema = new mongoose.Schema({
 		index : true
 	},
 	dept_id : {
-		type : mongoose.Schema.Types.ObjectId,
+		type : String,
 		ref : Dept,
 		index : true
 	},
