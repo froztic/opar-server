@@ -15,7 +15,7 @@ var AppointmentSchema = new mongoose.Schema({
 		ref : Doctor
 	},
 	dept_id : {
-		type : mongoose.Schema.Types.ObjectId,
+		type : String,
 		ref : Department
 	},
 	create_date : {

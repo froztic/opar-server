@@ -16,6 +16,7 @@ var models = {
 	user : require("./models/user").User,
 	patient : require("./models/user").Patient,
 	doctor : require("./models/user").Doctor,
+	officer : require("./models/user").Officer,
 	medrec : require("./models/medrec").MedicalRecord,
 	appt : require("./models/appt").Appointment,
 	dept : require("./models/dept").Department,
@@ -376,11 +377,11 @@ app.post('/officer.register', function(req, rea) {
 	models.officer.register(req.body, function(err, msg) {
 		if(err) {
 			console.error('failed : '+ err);
-			ret.success = success;
+			ret.success = false;
 			ret.msg = msg;
 		} else {
 			console.log('success');
-			ret.success = success;
+			ret.success = true;
 			ret.msg = 'success';
 		}
 		res.status(200).send(ret);
