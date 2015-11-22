@@ -77,7 +77,7 @@ ScheduleSchema.statics.getlist = function(data, callback) {
 			}
 		});
 	}
-});
+};
 
 ScheduleSchema.statics.addschedule = function(data, token, callback) {
 };

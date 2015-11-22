@@ -226,13 +226,19 @@ app.post('/user.login', jsonParser, function(req, res) {
 		} else {
 			ret.success = true;
 			ret.msg = 'success';
-			ret.userObj = msg;
-			tokend.create(ret.userObj, function (error, token) {
+			ret.user_obj = msg;
+			var token_v = {
+				_id : msg._id,
+				username : msg.username,
+				type : msg.type,
+				priviledge : msg.priviledge
+			};
+			tokend.create(token_v, function (error, token) {
 				if(error) {
 					console.error('failed to create token');
 				} else {
-					delete ret.userObj.iat;
-					delete ret.userObj.iss;
+//					delete ret.user_obj.iat;
+//					delete ret.user_obj.iss;
 					ret._token = token;
 				}
 				res.status(200).send(ret);
@@ -264,14 +270,16 @@ app.post('/user.changepass', jsonParser, function(req, res) {
 			ret.msg = 'token error';
 			res.status(200).send(ret);
 		} else {
+			console.log(payload.username + ' is changing a password');
 			models.user.changepass( req.body, payload, function(err2, msg) {
 				if(err2) {
+					console.error(err2);
 					ret.success = false;
 					ret.msg = msg;
 				} else {
 					ret.success = true;
 					ret.msg = 'success';
-					console.log(msg.username + ' password changed');
+					console.log(payload.username + ' password changed');
 				}
 				res.status(200).send(ret)
 			});
@@ -284,10 +292,13 @@ app.post('/patient.register', jsonParser, function(req, res) {
 		success: false,
 		msg: 'undefined'
 	};
+	console.log(req.body.username + ' is trying to register');
 	models.patient.register(req.body, function(err, msg) {
 		if(err) {
+			console.error(msg + ' : ' + err);
 			ret.success = false;
 		} else {
+			console.log('success');
 			ret.success = true;
 		}
 		ret.msg = msg;
@@ -319,6 +330,26 @@ app.post('/patient.editinfo', jsonParser, function(req, res) {
 				res.status(200).send(ret);
 			});
 		}
+	});
+});
+
+app.post('/doctor.register', jsonParser, function(req, res) {
+	var ret = {
+		success : false,
+		msg : 'undefined'
+	};
+	console.log(req.body.username + ' is trying to register');
+	models.doctor.register(req.body, function(err, msg) {
+		if(err) {
+			console.error('doctor register error : ' + err);
+			ret.success = false;
+			ret.msg = msg;
+		} else {
+			console.log('success');	
+			ret.success = true;
+			ret.msg = 'success';
+		}
+		res.status(200).send(ret);
 	});
 });
 

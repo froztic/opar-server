@@ -40,10 +40,6 @@ var PatientSchema = new mongoose.Schema({
 		type : Date,
 		default : Date.now
 	},
-	allergy : {
-		type : String,
-		default : 'ไม่มี'
-	},
 	priviledge : {
 		type : Number,
 		default : 1
@@ -86,7 +82,7 @@ UserSchema.statics.login = function(data, callback) {
 	if(!data.username || !data.password) {
 		callback('input_error', 'incomplete input');
 	} else {
-		User.findOne({username : data.username, password : data.password}, {'username':1, 'type':1, 'priviledge':1}).lean().exec( function (err, res) {
+		User.findOne({username : data.username, password : data.password}, {'username':1, 'type':1, 'priviledge':1, 'f_name':1, 'l_name':1}).lean().exec( function (err, res) {
 			if(err) {
 				callback(err, 'db error');
 			} else if(!res) {
@@ -159,6 +155,7 @@ PatientSchema.statics.register = function(data, callback) {
 						});
 						new_patient.save( function(err3, res3) {
 							if(err3) {
+								console.error('cannot save : ' + err3);
 								callback(err3, 'cannot save');
 							} else {
 								callback(null, 'success');
@@ -300,6 +297,49 @@ DoctorSchema.statics.getlist = function(data, token, callback) {
 			}
 		});
 	}
+};
+
+DoctorSchema.statics.register = function(data, callback) {
+	if(!data.username || !data.password) {
+	} else {
+		User.findOne({username : data.usernmame}, {"username":1}).lean().exec(function(err, res) {
+			if(err) {
+				callback(err, 'db error');
+			} else if(!res) {
+				User.findOne({email : data.email}, {"email":1}).lean().exec(function(err2, res2) {
+					if(err2) {
+						callback(err2, 'db error');
+					} else if(!res2) {
+						var new_doctor = new Doctor({
+							username : data.username,
+							password : data.password,
+							email : data.email,
+							phone : data.phone,
+							f_name : data.f_name,
+							l_name : data.l_name,
+							gender : data.gender,
+							dept_id : data.dept_id
+						});
+						new_doctor.save(function(err3, res3) {
+							if(err3) {
+								callback(err3, 'cannot save');
+							} else {
+								callback(null, 'success');
+							}
+						});
+					} else {
+						callback('email_in_use', 'email exist');
+					}
+				});
+			} else {
+				callback('username_in_use', 'username exist');
+			}
+		});
+	}
+};
+
+OfficerSchema.statics.register = function(data, callback) {
+	
 };
 
 //pack code into model
