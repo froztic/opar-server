@@ -21,11 +21,11 @@ var ScheduleSchema = new mongoose.Schema({
 });
 
 ScheduleSchema.statics.searchlist = function(data, callback) {
-	if(!data.type || !data.object_id) {
+	if(!data.type || !data.object_id || !data.skip || !data.limit) {
 		callback('input_err', 'incomplete input');
 	} else {
 		if(data.type === 'doctor') {
-			Schedule.find({doctor_id : data.object_id, start_time: Date.now()}).limit(50).lean().exec(function(err, res) {
+			Schedule.find({doctor_id : data.object_id, start_time: Date.now()}).sort('start_time').skip(data.skip).limit(data.limit).lean().exec(function(err, res) {
 				if(err) {
 					callback(err, 'db error');
 				} else if(!res) {
@@ -46,7 +46,7 @@ ScheduleSchema.statics.searchlist = function(data, callback) {
 						search_ids["$or"].push({"doctor_id": id.doctor_id});
 					});
 					search_ids.start_time = {"$lt":Date.now()};
-					Schedule.find(search_ids).sort('start_time').limit(50).lean().exec(function(err2, res2) {
+					Schedule.find(search_ids).sort('start_time').skip(data.skip).limit(data.limit).lean().exec(function(err2, res2) {
 						if(err2) {
 							callback(err2, 'db error');
 						} else if(!res2) {
@@ -67,7 +67,7 @@ ScheduleSchema.statics.getlist = function(data, callback) {
 	if(!data.doctor_id) {
 		callback('input_err', 'incomplete input');
 	} else {
-		Schedule.find({doctor_id : data.doctor_id, start_time : {$gt: data.start_time}, end_time : {$lt: data.end_time}}).lean().exec(function (err, res) {
+		Schedule.find({doctor_id : data.doctor_id, start_time : {$gt: data.start_time}, end_time : {$lt: data.end_time}}).sort('start_time').lean().exec(function (err, res) {
 			if(err) {
 				callback(err, 'db error');
 			} else if(!res) {
@@ -107,6 +107,19 @@ ScheduleSchema.statics.addschedule = function(data, token, callback) {
 };
 
 ScheduleSchema.statics.edit = function(data, callback) {
+	if(!data.schedule_id || !data.start_time || !data.end_time) {
+		callback('input_err', 'incomplete input');
+	} else {
+		SchedulefindOneAndUpdate({_id : data.schedule_id}, {start_time : data.start_time, end_time : data.end_time}).lean().exec(function(err ,res) {
+			if(err) {
+				callback(err, 'db error');
+			} else if(!res) {
+				callback('no_data', 'schedule not found');
+			} else {
+				callback(null, 'success');
+			}
+		});
+	}
 };
 
 ScheduleSchema.statics.removeschedule = function(data, callback) {

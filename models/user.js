@@ -206,7 +206,7 @@ PatientSchema.statics.getinfo = function(data, token, callback) {
 };
 
 PatientSchema.statics.getlist = function(data, callback) {
-	if(!data.search_params) {
+	if(!data.search_params || !data.skip || !data.limit) {
 		callback('input_error', 'incomplete input');
 	} else {
 		Patient.aggregate({
@@ -220,7 +220,8 @@ PatientSchema.statics.getlist = function(data, callback) {
 			}
 		}).match({ name: { $regex : '/' + data.search_params + '/i' } })
 		.sort('name')
-		.limit(50)
+		.skip(data.skip)
+		.limit(data.limit)
 		.exec( function(err, res) {
 			if(err) {
 				callback(err, 'db error');
@@ -261,7 +262,7 @@ PatientSchema.statics.editinfo = function(data, token, callback) {
 };
 
 DoctorSchema.statics.getlist = function(data, token, callback) {
-	if(!data.search_params || !data.search_type) {
+	if(!data.search_params || !data.search_type || !data.skip || !data.limit) {
 		callback('input_error', 'incomplete input');
 	} else {
 		Doctor.aggregate({ 
@@ -272,12 +273,13 @@ DoctorSchema.statics.getlist = function(data, token, callback) {
 				dept_id : 1
 			}
 		}).match({ name : { $regex : '/' + data.search_params + '/i' } })
-		.limit(50)
 //		.populate({
 //			path: 'dept_id',
 //			select: 'name'
 //		})
 		.sort('name')
+		.skip(data.skip)
+		.limit(data.limit)
 //		.sort('dept_id.name')
 		.exec( function(err, res) {
 			if(err) {

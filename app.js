@@ -458,7 +458,17 @@ app.post('/medrec.add', function(req, res) {
 			ret.msg = token;
 			res.status(200).send(ret);
 		} else {
-
+			models.medrec.addrec(req.body, token, function (err, msg) {
+				if(err) {
+					console.error(err);
+					ret.success = false;
+					ret.msg = msg;
+				} else {
+					ret.success = true;
+					ret.msg = 'success';
+				}
+				res.status(200).send(ret);
+			});
 		}
 	});
 });
@@ -599,7 +609,17 @@ app.post('/schedule.edit', function(req, res) {
 			ret.msg = token;
 			res.status(200).send(ret);
 		} else {
-
+			console.log(token.username + ' request to edit schedule ' + req.body.schedule_id);
+			models.schedule.edit(req.body, function(err, msg) {
+				if(err) {
+					console.error('failed : ' +err);
+					ret.success = false;
+				} else {
+					ret.success = true;
+				}
+				ret.msg = msg;
+				res.status(200).send(ret);
+			});
 		}
 	});
 });

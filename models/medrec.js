@@ -22,7 +22,10 @@ var MedRecSchema = new mongoose.Schema({
 //		type : mongoose.Schema.Types.ObjectId,
 //		ref : Nurse
 //	}, 
-	record_date : Date,
+	record_date : {
+		type : Date,
+		default : Date.now()
+	},
 	body_weight : Number,
 	body_height : Number,
 	body_temp : Number,
@@ -33,13 +36,17 @@ var MedRecSchema = new mongoose.Schema({
 });
 
 MedRecSchema.statics.getlist = function(data, token, callback) {
-	if(!data.patient_id) {
+	if(!data.patient_id || !data.skip || !data.limit) {
 		callback('error', 'incomplete input');
 	} else if(token.type === 'patient' && token._id !== data.patient_id) {
 		callback('err_no_priv', 'no priviledge');
 	} else {
 		MedicalRecord.find({patient_id : data.patient_id})
-		.populate({path: 'patient_id doctor_id pharmacy_id nurse_id', select: 'f_name l_name'}).exec(function (err, res) {
+		.populate({path: 'patient_id doctor_id', select: 'f_name l_name'})
+		.sort('-record_date')
+		.skip(data.skip)
+		.limit(data.limit)
+		.exec(function (err, res) {
 			if(err) {
 				callback(err, 'db error');
 			} else if(!res) {
@@ -53,23 +60,34 @@ MedRecSchema.statics.getlist = function(data, token, callback) {
 };
 
 MedRecSchema.statics.addrec = function(data, token, callback) {
-//	if(false) {
-//	} else {
-	var new_record = new MedicalRecord({
-		patient_id : data.patient_id,
-		doctor_id : token._id,
-//		pharmacy_id : data.pharmacy_id,
-//		nurse_id : data.nurse_id,
-		body_weight : data.body_weight,
-		body_height : data.body_height,
-		body_temp : data.body_temp,
-		heart_pulse : data.heart_pulse,
-		blood_pressure : data.blood_pressure,
-		symptom : data.symptom,
-		disease_code : data.disease_code
-	});
-	
-//	}
+	if(!data.patient_id || data.doctor_id) {
+		callback('error', 'incomplete input');
+	} else {
+		if(token.type === 'doctor' && data.doctor_id !== token._id) {
+			callback('err_no_priv', 'no priviledge');
+		} else {
+			var new_record = new MedicalRecord({
+				patient_id : data.patient_id,
+				doctor_id : data.doctor_id,
+//			pharmacy_id : data.pharmacy_id,
+//			nurse_id : data.nurse_id,
+				body_weight : data.body_weight,
+				body_height : data.body_height,
+				body_temp : data.body_temp,
+				heart_pulse : data.heart_pulse,
+				blood_pressure : data.blood_pressure,
+				symptom : data.symptom,
+				disease_code : data.disease_code
+			});
+			new_record.save(function(err,res) {
+				if(err) {
+					callback(err, 'cannot save');
+				} else {
+					callback(null, 'success');
+				}
+			});
+		}
+	}
 };
 
 //pack code into model
