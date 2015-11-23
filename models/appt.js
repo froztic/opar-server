@@ -56,7 +56,10 @@ AppointmentSchema.statics.getlist = function(data, token, callback) {
 						});
 						res2.splice(0, parseInt(data.skip));
 						res2.splice(parseInt(data.limit), res2.length);
-						Appointment.populate(res2, {path : 'doctor_id patient_id', select : 'f_name l_name', model : User}, function(err, res) {
+						Appointment.populate(res2,[
+							{path : 'patient_id', select : 'f_name l_name', model : Patient},
+							{path : 'doctor_id', select : 'f_name l_name dept_id', model : Doctor}
+						], function(err, res) {
 							if(err) {
 								callback(err, 'db error');
 							} else if(!res) {
@@ -89,7 +92,10 @@ AppointmentSchema.statics.getlist = function(data, token, callback) {
 						});
 						res2.splice(0, parseInt(data.skip));
 						res2.splice(parseInt(data.limit), res2.length);
-						Appointment.populate(res2, {path : 'doctor_id patient_id', select : 'f_name l_name', model : User}, function(err, res) {
+						Appointment.populate(res2, [
+							{path : 'patient_id', select : 'f_name l_name', model : Patient},
+							{path : 'doctor_id', select : 'f_name l_name dept_id', model : Doctor}
+						], function(err, res) {
 							if(err) {
 								callback(err, 'db error');
 							} else if(!res) {
@@ -172,34 +178,42 @@ AppointmentSchema.statics.edit = function(data, callback) {
 				callback('no_appt', 'appt not found');
 			} else {
 				if(res.schedule_id !== data.schedule_id) {
-					Schedule.findOneAndUpdate({_id : res.schedule_id}, {$inc: {capacity:-1} }).lean().exec(function(err2, res2) {
-						if(err2) {
-							callback(err2, 'db error');
-						} else if(!res2) {
-							callback('no_sched1', 'schedule not found');
-						} else {
-							Schedule.findOneAndUpdate({_id : data.schedule_id}, {$inc: {capacity:1} }).lean().exec(function(err3, res3) {
-								if(err3) {
-									callback(err3, 'db error');
-								} else if(!res3) {
-									callback('no_sched2', 'schedule not found');
+					Appointment.findOne({patient_id : res.patient_id, schedule_id:data.schedule_id}).lean().exec(function(err5, res5) {
+						if(err5) {
+							callback(err5, 'db error');
+						}else if(!res5) {
+							Schedule.findOneAndUpdate({_id : res.schedule_id}, {$inc: {capacity:-1} }).lean().exec(function(err2, res2) {
+								if(err2) {
+									callback(err2, 'db error');
+								} else if(!res2) {
+									callback('no_sched1', 'schedule not found');
 								} else {
-									res.doctor_id = data.doctor_id;
-									res.schedule_id = data.schedule_id;
-									if(data.description) {
-										res.description = data.description;
-									} else {
-										res.description = "";
-									}
-									res.save(function(err4, res4) {
-										if(err4) {
-											callback(err4, 'save error');
+									Schedule.findOneAndUpdate({_id : data.schedule_id}, {$inc: {capacity:1} }).lean().exec(function(err3, res3) {
+										if(err3) {
+											callback(err3, 'db error');
+										} else if(!res3) {
+											callback('no_sched2', 'schedule not found');
 										} else {
-											callback(null, 'success')
+											res.doctor_id = data.doctor_id;
+											res.schedule_id = data.schedule_id;
+											if(data.description) {
+												res.description = data.description;
+											} else {
+												res.description = "";
+											}
+											res.save(function(err4, res4) {
+											if(err4) {
+													callback(err4, 'save error');
+												} else {
+													callback(null, 'success');
+												}
+											});
 										}
 									});
 								}
 							});
+						} else {
+							callback('alreasy_exist', 'cannot change : already has appointment !!');
 						}
 					});
 				} else {

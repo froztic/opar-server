@@ -622,6 +622,16 @@ app.post('/appt.remove', function(req, res) {
 	});
 });
 
+app.post('/appt.setattend', function(req, res) {
+	var ret = {
+		success : false,
+		msg : 'undefined'
+	};
+	logind.is_login_priv(req.body._token, 2, function(error, token) {
+		
+	});
+});
+
 app.post('/schedule.add', function(req, res) {
 	var ret = {
 		success : false,
