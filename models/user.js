@@ -373,9 +373,11 @@ DoctorSchema.statics.register = function(data, callback) {
 	}
 };
 
-OfficerSchema.statics.register = function(data, callback) {
+UserSchema.statics.register = function(data, type, callback) {
 	if(!data.username || !data.password || !data.email || data.email.indexOf("@") === -1) {
 		callback('input_err', 'incomplete input');
+	} else if(type !== 'officer' && type !== 'nurse' && type !== 'pharmacy') {
+		callback('invalid_type', 'no such type supported');
 	} else {
 		User.findOne({username:data.username},{username:1}).lean().exec(function(err, res) {
 			if(err) {
@@ -385,22 +387,47 @@ OfficerSchema.statics.register = function(data, callback) {
 					if(err2) {
 						callback(err2, 'db error');
 					} else if(!res2) {
-						var new_officer = new Officer({
-							username : data.username,
-							password : data.password,
-							email : data.email,
-							phone : data.phone,
-							f_name : data.f_name,
-							l_name : data.l_name,
-							gender : data.gender
-						});
-						new_officer.save(function(err3, res3) {
+						var new_user;
+						if(type === 'officer') {
+							new_user = new Officer({
+								username : data.username,
+								password : data.password,
+								email : data.email,
+								phone : data.phone,
+								f_name : data.f_name,
+								l_name : data.l_name,
+								gender : data.gender
+							});
+						} else if(type === 'nurse') {
+							new_user = new Nurse({
+								username : data.username,
+								password : data.password,
+								email : data.email,
+								phone : data.phone,
+								f_name : data.f_name,
+								l_name : data.l_name,
+								gender : data.gender
+							});
+						} else if(type === 'pharmacy') {
+							new_user = new Pharmacy({
+								username : data.username,
+								password : data.password,
+								email : data.email,
+								phone : data.phone,
+								f_name : data.f_name,
+								l_name : data.l_name,
+								gender : data.gender
+							});
+						}
+						
+						new_user.save(function(err3, res3) {
 							if(err3) {
 								callback(err3, 'cannot save');
 							} else {
 								callback(null, 'success');
 							}
 						});
+						
 					} else {
 						callback('email_in_use', 'email exist');
 					}
