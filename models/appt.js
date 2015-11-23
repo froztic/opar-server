@@ -40,7 +40,7 @@ AppointmentSchema.statics.getlist = function(data, token, callback) {
 				callback('no_priv', 'no priviledge');
 			} else {
 				Appointment.find({patient_id : data.user_id, is_attend : false})
-				.populate({path : 'schedule_id', select : 'start_time end_time', match: { start_time : { $gte : Date.now() } },  model : Schedule}).sort('schedule_id.start_time').exec(function(err2, res2) {
+				.populate({path : 'schedule_id', select : 'start_time end_time', match: { start_time : { $gte : Date.now() } },  model : Schedule}).exec(function(err2, res2) {
 					if(err2) { 
 						callback(err2, 'db error');
 					} else if (!res2) { 
@@ -51,6 +51,9 @@ AppointmentSchema.statics.getlist = function(data, token, callback) {
 								res2.splice(i, 1);
 							}
 						}
+						res2.sort(function(a, b) {
+							return (new Date(a.schedule_id.start_time) - new Date(b.schedule_id.start_time));
+						});
 						res2.splice(0, parseInt(data.skip));
 						res2.splice(parseInt(data.limit), res2.length);
 						Appointment.populate(res2, {path : 'doctor_id patient_id', select : 'f_name l_name', model : User}, function(err, res) {
@@ -70,7 +73,7 @@ AppointmentSchema.statics.getlist = function(data, token, callback) {
 				callback('no_priv', 'no priviledge');
 			} else {
 				Appointment.find({doctor_id : data.user_id, is_attend : false})
-				.populate({path : 'schedule_id', select : 'start_time end_time', match: { start_time : { $gte : Date.now() } },  model : Schedule}).sort('schedule_id.start_time').exec(function(err2, res2) {
+				.populate({path : 'schedule_id', select : 'start_time end_time', match: { start_time : { $gte : Date.now() } },  model : Schedule}).exec(function(err2, res2) {
 					if(err2) {
 						callback(err2, 'db error');
 					} else if (!res2) {
@@ -81,6 +84,9 @@ AppointmentSchema.statics.getlist = function(data, token, callback) {
 								res2.splice(i, 1);
 							}
 						}
+						res2.sort(function(a, b) {
+							return (new Date(a.schedule_id.start_time) - new Date(b.schedule_id.start_time));
+						});
 						res2.splice(0, parseInt(data.skip));
 						res2.splice(parseInt(data.limit), res2.length);
 						Appointment.populate(res2, {path : 'doctor_id patient_id', select : 'f_name l_name', model : User}, function(err, res) {
