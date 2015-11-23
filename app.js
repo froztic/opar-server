@@ -97,7 +97,7 @@ app.get('/patient.getlist', function(req, res) {
 			ret.msg = token;
 			res.status(200).send(ret);
 		} else {
-			console.log('get patient list');
+			console.log(token.username + ' get patient list for ' + req.query.patient_id);
 			models.patient.getlist(req.query, function(err, msg) {
 				if(err) {
 					console.error(err);
@@ -126,7 +126,7 @@ app.get('/doctor.getlist', function(req, res) {
 			ret.msg = 'token error';
 			res.status(200).send(ret);
 		} else {
-			console.log('retreiving doctor list');
+			console.log('retreiving doctor list for "' + req.query.search_params + '"');
 			models.doctor.getlist(req.query, token, function(err, msg) {
 				if(err) {
 					console.error(err);
@@ -182,11 +182,14 @@ app.get('/medrec.getlist', function(req, res) {
 			ret.msg = token;
 			res.status(200).send(ret);
 		} else {
+			console.log(token.username + ' request for medical record list');
 			models.medrec.getlist(req.query, token, function(err, msg) {
 				if(err) {
+					console.error('failed : ' + err);
 					ret.success = false;
 					ret.msg = msg;
 				} else {
+					console.error('success');
 					ret.success = true;
 					ret.msg = 'success';
 					ret.medrec_list = msg;
@@ -559,9 +562,10 @@ app.post('/medrec.edit', function(req, res) {
 			ret.msg = token;
 			res.status(200).send(ret);
 		} else {
+			console.log(token.username + ' request to edit medical record');
 			models.medrec.edit(req.body, token, function (err, msg) {
 				if(err) {
-					console.error(err);
+					console.error('error : ' + err);
 					ret.success = false;
 				} else {
 					console.log('success');
@@ -589,7 +593,7 @@ app.post('/appt.create', function(req, res) {
 			console.log(token.username + ' is creating an appointment');
 			models.appt.create(req.body, token, function(err, msg) {
 				if(err) {
-					console.error(err);
+					console.error('failed : ' + err);
 					ret.success = false;
 					ret.msg = msg;
 				} else {
@@ -618,7 +622,7 @@ app.post('/appt.edit', function(req, res) {
 			console.log(token.username + ' is editing an appointment');
 			models.appt.edit(req.body, function(err, msg) {
 				if(err) {
-					console.error(err);
+					console.error('failed : ' + err);
 					ret.success = false;
 					ret.msg = msg;
 				} else {
@@ -644,11 +648,14 @@ app.post('/appt.remove', function(req, res) {
 			ret.msg = token;
 			res.status(200).send(ret);
 		} else {
+			console.log(token.username + ' is removing appointment ' + req.body.appt_id);
 			models.appt.removeappt(req.body, function(err, msg) {
 				if(err) {
+					console.error('failed : ' + err);
 					ret.success = false;
 					ret.msg = msg;
 				} else {
+					console.log('success');
 					ret.success = true;
 					ret.msg = 'success';
 				}
@@ -732,6 +739,7 @@ app.post('/schedule.edit', function(req, res) {
 					console.error('failed : ' +err);
 					ret.success = false;
 				} else {
+					console.log('done');
 					ret.success = true;
 				}
 				ret.msg = msg;
@@ -752,7 +760,18 @@ app.post('/schedule.remove', function(req, res) {
 			ret.msg = token;
 			res.status(200).send(ret);
 		} else {
-			
+			console.log(token.username + ' is trying to remove schedule ' + req.body.schedule_id);
+			models.schedule.removeschedule(req.body, function(err, msg) {
+				if(err) {
+					console.error('failed : ' + err);
+					ret.success = false;
+				} else {
+					console.log('success');
+					ret.success = true;
+				}
+				ret.msg = msg;
+				res.status(200).send(ret);
+			});
 		}
 	});
 });
