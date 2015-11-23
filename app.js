@@ -201,8 +201,8 @@ app.get('/appt.getlist', function(req, res) {
 	logind.is_login_priv(req.query._token, 5, function(error, token) {
 		if(error) {
 			ret.success = false;
-			ret.msg =token;	
-			res.statius(200).send(ret);
+			ret.msg = token;	
+			res.status(200).send(ret);
 		} else {
 			console.log('request list for appointment');
 			models.appt.getlist(req.query, token, function(err, msg) {
