@@ -435,7 +435,7 @@ app.post('/officer.register', function(req, res) {
 		msg : 'undefined'
 	};
 	console.log(req.body.username + ' is trying to register as officer');
-	models.officer.register(req.body, function(err, msg) {
+	models.user.register(req.body, 'officer', function(err, msg) {
 		if(err) {
 			console.error('failed : '+ err);
 			ret.success = false;
@@ -455,7 +455,7 @@ app.post('/nurse.register', function(req, res) {
 		msg : 'undefined'
 	};
 	console.log(req.body.username + ' is trying to register as nurse');
-	models.nurse.register(req.body, function(err, msg) {
+	models.user.register(req.body, 'nurse', function(err, msg) {
 		if(err) {
 			console.error('failed : '+ err);
 			ret.success = false;
@@ -475,7 +475,7 @@ app.post('/pharmacy.register', function(req, res) {
 		msg : 'undefined'
 	};
 	console.log(req.body.username + ' is trying to register as pharmacy');
-	models.pharmacy.register(req.body, function(err, msg) {
+	models.user.register(req.body, 'pharmacy', function(err, msg) {
 		if(err) {
 			console.error('failed : '+ err);
 			ret.success = false;
