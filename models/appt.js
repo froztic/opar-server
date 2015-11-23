@@ -23,7 +23,10 @@ var AppointmentSchema = new mongoose.Schema({
 		type : mongoose.Schema.Types.ObjectId,
 		ref : Schedule
 	},
-	is_attend : Boolean,
+	is_attend : {
+		type : Boolean,
+		default : false
+	},
 	attend_date : Date,
 	description : String
 });
@@ -86,7 +89,10 @@ AppointmentSchema.statics.create = function(data, token, callback) {
 			doctor_id : data.doctor_id,
 			schedule_id : data.schedule_id
 		});
-		Schedule.findOneAndUpdate({_id : new_appt.schedule_id}, {$inc: {capacity:1} }, {capacity:1}, {new:true}).lean().exec(function(err2, res2) {
+		if(data.description) {
+			new_appt.description = data.description;
+		}
+		Schedule.findOneAndUpdate({_id : new_appt.schedule_id}, {$inc: {capacity:1} }, {new:true}).lean().exec(function(err2, res2) {
 			if(err2) {
 				console.error(err2);
 				callback(err2, 'db error');
@@ -130,6 +136,11 @@ AppointmentSchema.statics.edit = function(data, callback) {
 								} else {
 									res.doctor_id = data.doctor_id;
 									res.schedule_id = data.schedule_id;
+									if(data.description) {
+										res.description = data.description;
+									} else {
+										res.description = "";
+									}
 									res.save(function(err4, res4) {
 										if(err4) {
 											callback(err4, 'save error');
@@ -160,11 +171,11 @@ AppointmentSchema.statics.removeappt = function(data, callback) {
 	if(!data.appt_id) {
 		callback('error', 'incomplete input');
 	} else {
-		Appointment.findOneAndRemove({_id: data.appt_id}).lean().exec(function (err, res) {
+		Appointment.findOneAndRemove({_id: data.appt_id}).exec(function (err, res) {
 			if(err) {
 				callback(err, 'db error');
 			} else if(!res) {
-				
+				callback('no_appt', 'appt not found');
 			} else {
 				Schedule.findOneAndUpdate({_id: res.schedule_id}, {$inc: {capacity:-1}}).lean().exec(function(err2, res2) {
 					if(err2) {
@@ -175,6 +186,22 @@ AppointmentSchema.statics.removeappt = function(data, callback) {
 						callback(null, 'success');
 					}
 				});
+			}
+		});
+	}
+};
+
+AppointmentSchema.statics.setattend = function(data, callback) {
+	if(!data.appt_id) {
+		callback('error', 'incomplete input');
+	} else {
+		Appointment.findOneANdUpdate({_id : data.appt_id}, {is_attend: true}).lean().exec(function(err, res) {
+			if(err) {
+				callback(err, 'db error');
+			} else if(!res) {
+				callback('no_appt', 'appt not found');
+			} else {
+				callback(null, 'success');
 			}
 		});
 	}
