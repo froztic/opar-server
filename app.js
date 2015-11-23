@@ -90,7 +90,7 @@ app.get('/patient.getlist', function(req, res) {
 	};
 	logind.is_login_priv(req.query._token, 30, function(error, token) {
 		if(error) {
-			console.error(error)
+			console.error('token error : ' + error);
 			ret.success = false;
 			ret.msg = token;
 			res.status(200).send(ret);
@@ -175,7 +175,7 @@ app.get('/medrec.getlist', function(req, res) {
 	};
 	logind.is_login_priv(req.query._token, 27, function(error, token) {
 		if(error) {
-			console.error(error);
+			console.error('token error : ' + error);
 			ret.success = false;
 			ret.msg = token;
 			res.status(200).send(ret);
@@ -227,7 +227,7 @@ app.get('/schedule.getlist', function(req, res) {
 	};
 	logind.is_login_priv(req.query._token, 6, function(error, token) {
 		if(error) {
-			console.error(error);
+			console.error('token error : ' + error);
 			ret.success = false;
 			ret.msg = token;
 			res.status(200).send(ret);
@@ -257,7 +257,7 @@ app.get('/schedule.search', function(req, res) {
 	};
 	logind.is_login_priv(req.query._token, 7, function(error, token) {
 		if(error) {
-			console.error(error);
+			console.error('token error : ' + error);
 			ret.success = false;
 			ret.msg = token;
 			res.status(200).send(ret);
@@ -387,7 +387,7 @@ app.post('/patient.editinfo', function(req, res) {
 	};
 	logind.is_login_priv(req.body._token, 5, function(error, token) {
 		if(error) {
-			console.error(error);
+			console.error('token error : ' + error);
 			ret.success = false;
 			ret.msg = token;
 			res.status(200).send(ret);
@@ -450,9 +450,43 @@ app.post('/officer.register', function(req, res) {
 });
 
 app.post('/nurse.register', function(req, res) {
+	var ret = {
+		success : false,
+		msg : 'undefined'
+	};
+	console.log(req.body.username + ' is trying to register as nurse');
+	models.nurse.register(req.body, function(err, msg) {
+		if(err) {
+			console.error('failed : '+ err);
+			ret.success = false;
+			ret.msg = msg;
+		} else {
+			console.log('success');
+			ret.success = true;
+			ret.msg = 'success';
+		}
+		res.status(200).send(ret);
+	});
 });
 
 app.post('/pharmacy.register', function(req, res) {
+	var ret = {
+		success : false,
+		msg : 'undefined'
+	};
+	console.log(req.body.username + ' is trying to register as pharmacy');
+	models.pharmacy.register(req.body, function(err, msg) {
+		if(err) {
+			console.error('failed : '+ err);
+			ret.success = false;
+			ret.msg = msg;
+		} else {
+			console.log('success');
+			ret.success = true;
+			ret.msg = 'success';
+		}
+		res.status(200).send(ret);
+	});
 });
 
 app.post('/dept.add', function(req, res) {
@@ -462,7 +496,7 @@ app.post('/dept.add', function(req, res) {
 	};
 	logind.is_login(req.body._token, function(error, token) {
 		if(error) {
-			console.error(error);
+			console.error('token error : ' + error);
 			ret.success = false;
 			ret.msg = token;
 			res.status(200).send(ret);
@@ -489,7 +523,7 @@ app.post('/medrec.add', function(req, res) {
 	};
 	logind.is_login_priv(req.body._token, 10, function(error, token) {
 		if(error) {
-			console.error(error);
+			console.error('token error : ' + error);
 			ret.success = false;
 			ret.msg = token;
 			res.status(200).send(ret);
@@ -518,7 +552,7 @@ app.post('/medrec.edit', function(req, res) {
 	};
 	logind.is_login_priv(req.body._token, 10, function(error, token) {
 		if(error) {
-			console.error(error);
+			console.error('token error : ' + error);
 			ret.success = false;
 			ret.msg = token;
 			res.status(200).send(ret);
@@ -545,7 +579,7 @@ app.post('/appt.create', function(req, res) {
 	};
 	logind.is_login_priv(req.body._token, 5, function(error, token) {
 		if(error) {
-			console.error(error);
+			console.error('token error : ' + error);
 			ret.success = false;
 			ret.msg = token;
 			res.status(200).send(ret);
@@ -574,7 +608,7 @@ app.post('/appt.edit', function(req, res) {
 	};
 	logind.is_login_priv(req.body._token, 5, function(error, token) {
 		if(error) {
-			console.error(error);
+			console.error('token error : ' + error);
 			ret.success = false;
 			ret.msg = token;
 			res.status(200).send(ret);
@@ -603,7 +637,7 @@ app.post('/appt.remove', function(req, res) {
 	};
 	logind.is_login_priv(req.body._token, 5, function(error, token) {
 		if(error) {
-			console.error(error);
+			console.error('token error : ' + error);
 			ret.success = false;
 			ret.msg = token;
 			res.status(200).send(ret);
@@ -628,7 +662,25 @@ app.post('/appt.setattend', function(req, res) {
 		msg : 'undefined'
 	};
 	logind.is_login_priv(req.body._token, 2, function(error, token) {
-		
+		if(error) {
+			console.error('token error : ' + error);
+			ret.success = false;
+			ret.msg = token;
+			res.status(200).send(ret);
+		} else {
+			console.log(token.username + ' is going to set appointment attend');
+			models.schedule.setattend(req.body, function(err, msg) {
+				if(err) {
+					console.error('failed : ' + err);
+					ret.success = false;
+				} else {
+					console.log('success');
+					ret.success = true;
+				}
+				ret.msg = msg;
+				res.status(200).send(ret);
+			});
+		}
 	});
 });
 
@@ -639,7 +691,7 @@ app.post('/schedule.add', function(req, res) {
 	};
 	logind.is_login_priv(req.body._token, 6, function(error, token) {
 		if(error) {
-			console.error(error);
+			console.error('token error : ' + error);
 			ret.success = false;
 			ret.msg = token;
 			res.status(200).send(ret);
@@ -667,7 +719,7 @@ app.post('/schedule.edit', function(req, res) {
 	};
 	logind.is_login_priv(req.body._token, 6, function(error, token) {
 		if(error) {
-			console.error(error);
+			console.error('token error : ' + error);
 			ret.success = false;
 			ret.msg = token;
 			res.status(200).send(ret);
@@ -693,7 +745,7 @@ app.post('/schedule.remove', function(req, res) {
 	};
 	logind.is_login_priv(req.body._token, 6, function(error, token) {
 		if(error) {
-			console.error(error);
+			console.error('token error : ' + error);
 			ret.success = false;
 			ret.msg = token;
 			res.status(200).send(ret);
