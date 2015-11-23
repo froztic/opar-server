@@ -8,6 +8,8 @@ var jwt = require('jsonwebtoken');
 var async = require('async');
 var cors = require('cors');
 
+require("console-stamp")(console, "yyyy-mm-dd HH:MM:ss.l");
+
 mongoose.connect('mongodb://127.0.0.1:27017/opar');
 
 var secret = "EIFJHSGUY235THGL6KN7W9L0UIHQW2R0QP5QOJ9SDLFU23GSI8U6HE4TJG8PW4OP9OY3JG6VD8BWYTD3IF0J";
