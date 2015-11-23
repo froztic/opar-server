@@ -25,7 +25,7 @@ ScheduleSchema.statics.searchlist = function(data, callback) {
 		callback('input_err', 'incomplete input');
 	} else {
 		if(data.type === 'doctor') {
-			Schedule.find({doctor_id : data.object_id, start_time: Date.now()}).sort('start_time').skip(data.skip).limit(data.limit).lean().exec(function(err, res) {
+			Schedule.find({doctor_id : data.object_id, start_time: {$gte: Date.now()} }).sort('start_time').skip(parseInt(data.skip)).limit(parseInt(data.limit)).lean().exec(function(err, res) {
 				if(err) {
 					callback(err, 'db error');
 				} else if(!res) {
@@ -45,8 +45,8 @@ ScheduleSchema.statics.searchlist = function(data, callback) {
 					async.each(res, function(id) {
 						search_ids["$or"].push({"doctor_id": id.doctor_id});
 					});
-					search_ids.start_time = {"$lt":Date.now()};
-					Schedule.find(search_ids).sort('start_time').skip(data.skip).limit(data.limit).lean().exec(function(err2, res2) {
+					search_ids.start_time = {"$gte":Date.now()};
+					Schedule.find(search_ids).sort('start_time').skip(parseInt(data.skip)).limit(parseInt(data.limit)).lean().exec(function(err2, res2) {
 						if(err2) {
 							callback(err2, 'db error');
 						} else if(!res2) {
@@ -64,10 +64,10 @@ ScheduleSchema.statics.searchlist = function(data, callback) {
 };
 
 ScheduleSchema.statics.getlist = function(data, callback) {
-	if(!data.doctor_id) {
+	if(!data.doctor_id || !data.start_time || !data.end_time || !data.skip || !data.limit) {
 		callback('input_err', 'incomplete input');
 	} else {
-		Schedule.find({doctor_id : data.doctor_id, start_time : {$gt: data.start_time}, end_time : {$lt: data.end_time}}).sort('start_time').lean().exec(function (err, res) {
+		Schedule.find({doctor_id : data.doctor_id, start_time : {$gt: data.start_time}, end_time : {$lt: data.end_time}}).sort('start_time').skip(parseInt(data.skip)).limit(parseInt(data.limit)).lean().exec(function (err, res) {
 			if(err) {
 				callback(err, 'db error');
 			} else if(!res) {
@@ -83,7 +83,7 @@ ScheduleSchema.statics.addschedule = function(data, token, callback) {
 	if(!data.doctor_id || !data.start_time || !data.end_time) {
 		callback('input_err', 'incomplete input');
 	} else {
-		Schedule.findOne({doctor_id : data.doctor_id, start_time : {$gte : data.start_time}, end_time : {$lte: data.end_time}}).lean(),exec(function(err, res) {
+		Schedule.findOne({doctor_id : data.doctor_id, start_time : {$gte : data.start_time}, end_time : {$lte: data.end_time}}).lean().exec(function(err, res) {
 			if(err) {
 				callback(err, 'db error');
 			} else if(!res) {
@@ -128,5 +128,5 @@ ScheduleSchema.statics.removeschedule = function(data, callback) {
 var Schedule = mongoose.model('schedule', ScheduleSchema);
 
 module.exports = {
-	Doctor : Doctor
+	Schedule : Schedule
 };

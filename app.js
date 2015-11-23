@@ -95,11 +95,14 @@ app.get('/patient.getlist', function(req, res) {
 			ret.msg = token;
 			res.status(200).send(ret);
 		} else {
+			console.log('get patient list');
 			models.patient.getlist(req.query, function(err, msg) {
 				if(err) {
+					console.error(err);
 					ret.success = false;
 					ret.msg = msg;
 				} else { 
+					console.log('success');
 					ret.success = true;
 					ret.msg = 'success';
 					ret.patient_list = msg;
@@ -121,11 +124,14 @@ app.get('/doctor.getlist', function(req, res) {
 			ret.msg = 'token error';
 			res.status(200).send(ret);
 		} else {
+			console.log('retreiving doctor list');
 			models.doctor.getlist(req.query, token, function(err, msg) {
 				if(err) {
+					console.error(err);
 					ret.success = false;
 					ret.msg = msg;
 				} else {
+					console.log('success');
 					ret.success = true;
 					ret.msg = 'success';
 					ret.doctor_list = msg;
@@ -215,6 +221,30 @@ app.get('/appt.getlist', function(req, res) {
 });
 
 app.get('/schedule.getlist', function(req, res) {
+	var ret = {
+	};
+	logind.is_login_priv(req.query._token, 6, function(error, token) {
+		if(error) {
+			console.error(error);
+			ret.success = false;
+			ret.msg = token;
+			res.status(200).send(ret);
+		} else {
+			models.schedule.getlist(req.query, function(err, msg) {
+				if(err) {
+					console.error(err);
+					ret.success = false;
+					ret.msg = msg;
+				} else {
+					console.log('success');
+					ret.success = true;
+					ret.msg = 'success';
+					ret.schedule_list = msg;
+				}
+				res.status(200).send(ret);
+			});
+		}
+	});
 });
 
 app.get('/schedule.search', function(req, res) {
@@ -229,11 +259,14 @@ app.get('/schedule.search', function(req, res) {
 			ret.msg = token;
 			res.status(200).send(ret);
 		} else {
+			console.log('request search for schedule');
 			models.schedule.searchlist (req.query, function(err, msg) {
 				if(err) {
+					console.error(err);
 					ret.success = false;
 					ret.msg = msg;
 				} else {
+					console.log('success');
 					ret.success = true;
 					ret.msg = 'success';
 					ret.schedule_list = msg;
