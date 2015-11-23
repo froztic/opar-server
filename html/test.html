@@ -1,0 +1,20 @@
+<html>
+<head><title>Punnathon the motherfucker</title></head>
+<body>
+<h2>ISODate Extraction Test</h2> for Punnathon the motherfucker
+<br /><br />
+<button onClick="now()">Go !!</button>
+<div id="text"></div>
+<script src="http://vps.froztic.in.th:3000/console/jquery-1.11.3.min.js"></script>
+<script>
+	function now() {
+		var date = new Date();
+		var ISODate = date.toISOString();
+		var date2 = new Date(ISODate);
+		
+
+		$('#text').html('ISODate : ' + ISODate + '<br />year : ' + date2.getFullYear() + '<br />month : ' + (date2.getMonth() + 1) + '<br />date : ' + date2.getDate() + '<br />hour : ' + date2.getHours() + '<br />minute : ' + date2.getMinutes() + '<br />second : ' + date2.getSeconds() + '<br />millisecond : ' + date2.getMilliseconds());
+	};
+</script>
+</body>
+</html>

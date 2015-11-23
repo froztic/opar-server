@@ -25,12 +25,16 @@ ScheduleSchema.statics.searchlist = function(data, callback) {
 		callback('input_err', 'incomplete input');
 	} else {
 		if(data.type === 'doctor') {
-			Schedule.find({doctor_id : data.object_id, start_time: {$gte: Date.now()} }).sort('start_time').skip(parseInt(data.skip)).limit(parseInt(data.limit)).lean().exec(function(err, res) {
+			Schedule.find({doctor_id : data.object_id, start_time: {$gte: Date.now()} })
+			.sort('start_time').skip(parseInt(data.skip)).limit(parseInt(data.limit))
+			.populate({ path : 'doctor_id', select : 'f_name l_name', model : Doctor })
+			.lean().exec(function(err, res) {
 				if(err) {
 					callback(err, 'db error');
 				} else if(!res) {
 					callback('no_schedule', 'no schedule found');
 				} else {
+//					Schedule.populate
 					callback(null, res);
 				}
 			});
@@ -46,7 +50,8 @@ ScheduleSchema.statics.searchlist = function(data, callback) {
 						search_ids["$or"].push({"doctor_id": id.doctor_id});
 					});
 					search_ids.start_time = {"$gte":Date.now()};
-					Schedule.find(search_ids).sort('start_time').skip(parseInt(data.skip)).limit(parseInt(data.limit)).lean().exec(function(err2, res2) {
+					Schedule.find(search_ids).sort('start_time').skip(parseInt(data.skip)).limit(parseInt(data.limit))
+					.populate({ path : 'doctor_id', select : 'f_name l_name', model : Doctor }).lean().exec(function(err2, res2) {
 						if(err2) {
 							callback(err2, 'db error');
 						} else if(!res2) {

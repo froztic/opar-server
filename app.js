@@ -204,12 +204,14 @@ app.get('/appt.getlist', function(req, res) {
 			ret.msg =token;	
 			res.statius(200).send(ret);
 		} else {
+			console.log('request list for appointment');
 			models.appt.getlist(req.query, token, function(err, msg) {
 				if(err) {
 					console.error(err);
 					ret.success = false;
 					ret.msg = msg;
 				} else {
+					console.log('success');
 					ret.success = true;
 					ret.msg = 'success';
 					ret.appt_list = msg;
@@ -278,7 +280,7 @@ app.get('/schedule.search', function(req, res) {
 	});
 });
 
-//app.use('/web', express.static(__dirname + '/html');
+app.use('/web', express.static(__dirname + '/html'));
 
 app.get('/*', function(req, res) {
 	res.status(404).sendFile(__dirname + '/html/404.html');
@@ -548,12 +550,14 @@ app.post('/appt.create', function(req, res) {
 			ret.msg = token;
 			res.status(200).send(ret);
 		} else {
+			console.log(token.username + ' is creating an appointment');
 			models.appt.create(req.body, token, function(err, msg) {
 				if(err) {
 					console.error(err);
 					ret.success = false;
 					ret.msg = msg;
 				} else {
+					console.log('success');
 					ret.success = true;
 					ret.msg = 'success';
 				}
@@ -575,11 +579,14 @@ app.post('/appt.edit', function(req, res) {
 			ret.msg = token;
 			res.status(200).send(ret);
 		} else {
+			console.log(token.username + ' is editing an appointment');
 			models.appt.edit(req.body, function(err, msg) {
 				if(err) {
+					console.error(err);
 					ret.success = false;
 					ret.msg = msg;
 				} else {
+					console.log('success');
 					ret.success = true;
 					ret.msg = 'success';
 				}

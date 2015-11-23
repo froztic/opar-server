@@ -1,5 +1,6 @@
 var mongoose = require("mongoose");
 
+var User = require("../models/user").User;
 var Patient = require("../models/user").Patient;
 var Doctor = require("../models/user").Doctor;
 var Department = require("../models/dept").Department;
@@ -13,10 +14,6 @@ var AppointmentSchema = new mongoose.Schema({
 	doctor_id : {
 		type : mongoose.Schema.Types.ObjectId,
 		ref : Doctor
-	},
-	dept_id : {
-		type : String,
-		ref : Department
 	},
 	create_date : {
 		type : Date,
@@ -40,10 +37,12 @@ AppointmentSchema.statics.getlist = function(data, token, callback) {
 				callback('no_priv', 'no priviledge');
 			} else {
 				Appointment.find({patient_id : data.user_id, is_attend : false})
-				.populate({path : 'schedule_id', select : 'start_time end_time'})
-				.find({'dept_id.start_time' : {$gte: Date.now()} })
+				.populate({path : 'schedule_id', select : 'start_time end_time', model : Schedule})
+				.find({'schedule_id.start_time' : {$gte: Date.now()} })
 //				.project({dept_id.start_time : {$gte: Date.now()}})
-				.sort('dept_id.start_time').skip(data.skip).limit(data.limit).lean().exec(function(err, res) {
+				.sort('schedule_id.start_time').skip(parseInt(data.skip)).limit(parseInt(data.limit))
+				.populate({path : 'doctor_id patient_id', select : 'f_name l_name', model : User})
+				.lean().exec(function(err, res) {
 					if(err) {
 						callback(err, 'db error');
 					} else if(!res) {
@@ -58,9 +57,11 @@ AppointmentSchema.statics.getlist = function(data, token, callback) {
 				callback('no_priv', 'no priviledge');
 			} else {
 				Appointment.find({doctor_id : data.user_id, is_attend : false})
-				.populate({path : 'schedule_id', select : 'start_time end_time'})
-				.find({'dept_id.start_time' : {$gte: Date.now()} })
-				.sort('dept_id.start_time').skip(data.skip).limit(data.limit).lean().exec(function(err, res) {
+				.populate({path : 'schedule_id', select : 'start_time end_time', model : Schedule})
+				.find({'schedule_id.start_time' : {$gte: Date.now()} })
+				.sort('schedule_id.start_time').skip(parseInt(data.skip)).limit(parseInt(data.limit))
+				.populate({path : 'doctor_id patient_id', select : 'f_name l_name', model : User})
+				.lean().exec(function(err, res) {
 					if(err) {
 						callback(err, 'db error');
 					} else if(!res) {
@@ -77,13 +78,12 @@ AppointmentSchema.statics.getlist = function(data, token, callback) {
 };
 
 AppointmentSchema.statics.create = function(data, token, callback) {
-	if(!data.doctor_id || !data.dept_id || !data.schedule_id) {
+	if(!data.doctor_id || !data.patient_id || !data.schedule_id) {
 		callback('error', 'incomplete input');
 	} else {
 		var new_appt = new Appointment({
 			patient_id : data.patient_id,
 			doctor_id : data.doctor_id,
-			dept_id : data.dept_id,
 			schedule_id : data.schedule_id
 		});
 		Schedule.findOneAndUpdate({_id : new_appt.schedule_id}, {$inc: {capacity:1} }, {capacity:1}, {new:true}).lean().exec(function(err2, res2) {
@@ -107,6 +107,7 @@ AppointmentSchema.statics.create = function(data, token, callback) {
 
 AppointmentSchema.statics.edit = function(data, callback) {
 	if(!data.appt_id) {
+		callback('input_err', 'incomplete input');
 	} else {
 		Appointment.findOne({_id:data.appt_id}).exec(function(err, res) {
 			if(err) {
@@ -128,7 +129,6 @@ AppointmentSchema.statics.edit = function(data, callback) {
 									callback('no_sched2', 'schedule not found');
 								} else {
 									res.doctor_id = data.doctor_id;
-									res.dept_id = data.dept_id;
 									res.schedule_id = data.schedule_id;
 									res.save(function(err4, res4) {
 										if(err4) {
@@ -143,7 +143,6 @@ AppointmentSchema.statics.edit = function(data, callback) {
 					});
 				} else {
 					res.doctor_id = data.doctor_id;
-					res.dept_id = data.dept_id;
 					res.save(function (err2, res2) {
 						if(err2) {
 							callback(err2, 'save error');
