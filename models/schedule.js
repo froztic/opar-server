@@ -64,10 +64,10 @@ ScheduleSchema.statics.searchlist = function(data, callback) {
 };
 
 ScheduleSchema.statics.getlist = function(data, callback) {
-	if(!data.doctor_id || !data.start_time || !data.end_time || !data.skip || !data.limit) {
+	if(!data.doctor_id || !data.start_time || !data.end_time) {
 		callback('input_err', 'incomplete input');
 	} else {
-		Schedule.find({doctor_id : data.doctor_id, start_time : {$gt: data.start_time}, end_time : {$lt: data.end_time}}).sort('start_time').skip(parseInt(data.skip)).limit(parseInt(data.limit)).lean().exec(function (err, res) {
+		Schedule.find({doctor_id : data.doctor_id, start_time : {$gt: data.start_time}, end_time : {$lt: data.end_time}}).sort('start_time').lean().exec(function (err, res) {
 			if(err) {
 				callback(err, 'db error');
 			} else if(!res) {

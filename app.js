@@ -76,7 +76,7 @@ app.get('/patient.getinfo', function(req, res) {
 });
 
 app.get(/.*.getlist$/, function(req, res, next) {
-	if(req.query._token) {
+	if(req.query._token || req.path === '/dept.getlist') {
 		next();
 	} else {
 		res.status(404).sendFile(__dirname + '/html/404.html');
@@ -230,6 +230,7 @@ app.get('/schedule.getlist', function(req, res) {
 			ret.msg = token;
 			res.status(200).send(ret);
 		} else {
+			console.log('schedule list requested');
 			models.schedule.getlist(req.query, function(err, msg) {
 				if(err) {
 					console.error(err);
@@ -491,12 +492,14 @@ app.post('/medrec.add', function(req, res) {
 			ret.msg = token;
 			res.status(200).send(ret);
 		} else {
+			console.log(token.username + ' request to add medical record');
 			models.medrec.addrec(req.body, token, function (err, msg) {
 				if(err) {
 					console.error(err);
 					ret.success = false;
 					ret.msg = msg;
 				} else {
+					console.log('success');
 					ret.success = true;
 					ret.msg = 'success';
 				}
@@ -518,7 +521,17 @@ app.post('/medrec.edit', function(req, res) {
 			ret.msg = token;
 			res.status(200).send(ret);
 		} else {
-
+			models.medrec.edit(req.body, token, function (err, msg) {
+				if(err) {
+					console.error(err);
+					ret.success = false;
+				} else {
+					console.log('success');
+					ret.success = true;
+				}
+				ret.msg = msg;
+				res.status(200).send(ret);
+			});
 		}
 	});
 });
