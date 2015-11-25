@@ -97,7 +97,7 @@ app.get('/patient.getlist', function(req, res) {
 			ret.msg = token;
 			res.status(200).send(ret);
 		} else {
-			console.log(token.username + ' get patient list for ' + req.query.patient_id);
+			console.log(token.username + ' get patient list for "' + req.query.search_params + '"');
 			models.patient.getlist(req.query, function(err, msg) {
 				if(err) {
 					console.error(err);

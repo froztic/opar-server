@@ -115,7 +115,7 @@ ScheduleSchema.statics.edit = function(data, callback) {
 	if(!data.schedule_id || !data.start_time || !data.end_time) {
 		callback('input_err', 'incomplete input');
 	} else {
-		SchedulefindOneAndUpdate({_id : data.schedule_id}, {start_time : data.start_time, end_time : data.end_time}).lean().exec(function(err ,res) {
+		Schedule.findOneAndUpdate({_id : data.schedule_id}, {start_time : data.start_time, end_time : data.end_time}).lean().exec(function(err ,res) {
 			if(err) {
 				callback(err, 'db error');
 			} else if(!res) {
