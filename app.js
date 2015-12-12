@@ -922,12 +922,28 @@ app.post('/schedule.remove', function(req, res) {
 				if(err) {
 					console.error('failed : ' + err);
 					ret.success = false;
+					ret.msg = msg;
+					res.status(200).send(ret);
 				} else {
 					console.log('success');
 					ret.success = true;
+					ret.msg = 'success';
+					res.status(200).send(ret);
+					async.each(msg, function(mail, callback) {
+						var content = "เนื่องจากแพทย์" + mail.doctor_name + "ได้ทำการยกเลิกตารางออกตรวจ ทางระบบจึงต้องขอทำการเปลี่ยนแปลงการนัดหมายที่คุณ" + mail.patient_name +  " ได้เคยนัดไปก่อนหน้า ดังนี้<br /><br />";
+						if(mail.type === 'remove') {
+							content += '<b>ยกเลิกการนัดหมาย</b><br />แพทย์ : ' + mail.doctor_name + '<br />แผนก : ' + mail.dept_name + '<br />ช่วงเวลา : ' + mail.old_start_time + ' ถึง ' + mail.old_end_time ;
+						} else if(mail.type === 'change') {
+							content += '<b>เลี่ยนเวลา / แพทย์ที่ทำการนัดหมาย</b><br />จากเดิมที่ได้นัดหมายกับแพทย์' + mail.doctor_name + ' แผนก' + mail.dept_name + '<br />ช่วงเวลา : ' + mail.old_start_time + ' ถึง ' + mail.old_end_time + '<br /><b>เปลี่ยนเป็น</b><br />แพทย์ : ' + mail.new_doctor_name + '<br />แผนก : ' + mail.dept_name + ' (แผนกเดิม)<br />ช่วงเวลา : ' + mail.old_end_time + ' ถึง ' + mail.new_end_time;
+						} 
+						content += '<br /><br /> คุณสามารถแก้ไข เปลี่ยนแปลง หรือยกเลิกการนัดหมายดังกล่าวได้ด้วยตนเองผ่านทางเว็บไซต์ <a href=\'' + client_root + '\'>OPAR System</a><br />ขอบคุณที่ใช้บริการ';
+						sendmail(mail.patient_name, mail.patient_email, "แจ้งเปลี่ยนแปลงการนัดหมาย [" + Date.now() + "]", content);
+						callback(null);
+					}, function(err2) {
+						if(err2) console.error('send mail has been halted | ' + err2);
+						else console.log('done send all change mail');
+					});
 				}
-				ret.msg = msg;
-				res.status(200).send(ret);
 			});
 		}
 	});

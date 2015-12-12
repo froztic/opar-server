@@ -160,7 +160,6 @@ UserSchema.statics.resetpass = function(data, callback) {
 							} else if(!res3) {
 								callback('impossible2', 'RESET NOT FOUND ?? IMPOSSIBLE !!');
 							} else {
-								console.info('test out : ' + JSON.stringify(res3));
 								callback(null, 'success');
 							}
 						});
