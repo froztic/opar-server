@@ -31,6 +31,8 @@ var models = {
 //	appt : require("./models/appt").Appointment
 };
 
+var extjs = require("./removeschedule.js");
+
 var tokend;
 /*
 var transporter = nodemailer.createTransport(require('nodemailer-smtp-pool')({
@@ -919,7 +921,7 @@ app.post('/schedule.remove', function(req, res) {
 			res.status(200).send(ret);
 		} else {
 			console.log(token.username + ' is trying to remove schedule ' + req.body.schedule_id);
-			models.schedule.removeschedule(req.body, function(err, msg) {
+			extjs.removeschedule(req.body, function(err, msg) {
 				if(err) {
 					console.error('failed : ' + err);
 					ret.success = false;
@@ -935,7 +937,7 @@ app.post('/schedule.remove', function(req, res) {
 						if(mail.type === 'remove') {
 							content += '<b>ยกเลิกการนัดหมาย</b><br />แพทย์ : ' + mail.doctor_name + '<br />แผนก : ' + mail.dept_name + '<br />ช่วงเวลา : ' + mail.old_start_time + ' ถึง ' + mail.old_end_time;
 						} else if(mail.type === 'change') {
-							content += '<b>เลี่ยนเวลา / แพทย์ที่ทำการนัดหมาย</b><br />จากเดิมที่ได้นัดหมายกับแพทย์' + mail.doctor_name + ' แผนก' + mail.dept_name + '<br />ช่วงเวลา : ' + mail.old_start_time + ' ถึง ' + mail.old_end_time + '<br /><b>เปลี่ยนเป็น</b><br />แพทย์ : ' + mail.new_doctor_name + '<br />แผนก : ' + mail.dept_name + ' (แผนกเดิม)<br />ช่วงเวลา : ' + mail.old_end_time + ' ถึง ' + mail.new_end_time;
+							content += '<b>เลี่ยนเวลา / แพทย์ที่ทำการนัดหมาย</b><br />จากเดิมที่ได้นัดหมายกับแพทย์' + mail.doctor_name + ' แผนก' + mail.dept_name + '<br />ช่วงเวลา : ' + mail.old_start_time + ' ถึง ' + mail.old_end_time + '<br /><b>เปลี่ยนเป็น</b><br />แพทย์ : ' + mail.new_doctor_name + '<br />แผนก : ' + mail.dept_name + ' (แผนกเดิม)<br />ช่วงเวลา : ' + mail.new_start_time + ' ถึง ' + mail.new_end_time;
 						} 
 						content += '<br /><br /> คุณสามารถแก้ไข เปลี่ยนแปลง หรือยกเลิกการนัดหมายดังกล่าวได้ด้วยตนเองผ่านทางเว็บไซต์ <a href=\'' + client_root + '\'>OPAR System</a><br />ขอบคุณที่ใช้บริการ';
 						sendmail(mail.patient_name, mail.patient_email, "แจ้งเปลี่ยนแปลงการนัดหมาย [" + Date.now() + "]", content);

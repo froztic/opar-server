@@ -168,7 +168,7 @@ AppointmentSchema.statics.create = function(data, token, callback) {
 };
 
 AppointmentSchema.statics.editappt = function(data, callback) {
-	if(!data.appt_id) {
+	if(!data.appt_id || !data.doctor_id || !data.schedule_id) {
 		callback('input_err', 'incomplete input');
 	} else {
 		Appointment.findOne({_id:data.appt_id}).exec(function(err, res) {
@@ -198,8 +198,6 @@ AppointmentSchema.statics.editappt = function(data, callback) {
 											res.schedule_id = data.schedule_id;
 											if(data.description) {
 												res.description = data.description;
-											} else {
-												res.description = "";
 											}
 											res.save(function(err4, res4) {
 											if(err4) {

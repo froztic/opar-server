@@ -24,6 +24,7 @@ var ScheduleSchema = new mongoose.Schema({
 
 ScheduleSchema.statics.searchlist = function(data, callback) {
 	if(!data.type || !data.object_id || !data.skip || !data.limit) {
+		console.info(data);
 		callback('input_err', 'incomplete input');
 	} else {
 		if(data.type === 'doctor') {
