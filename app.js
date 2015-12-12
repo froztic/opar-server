@@ -27,7 +27,8 @@ var models = {
 	medrec : require("./models/medrec").MedicalRecord,
 	appt : require("./models/appt").Appointment,
 	dept : require("./models/dept").Department,
-	schedule : require("./models/schedule").Schedule
+	schedule : require("./models/schedule").Schedule,
+//	appt : require("./models/appt").Appointment
 };
 
 var tokend;
@@ -777,7 +778,7 @@ app.post('/appt.edit', function(req, res) {
 			res.status(200).send(ret);
 		} else {
 			console.log(token.username + ' is editing an appointment');
-			models.appt.edit(req.body, function(err, msg) {
+			models.appt.editappt(req.body, function(err, msg) {
 				if(err) {
 					console.error('failed : ' + err);
 					ret.success = false;
@@ -932,7 +933,7 @@ app.post('/schedule.remove', function(req, res) {
 					async.each(msg, function(mail, callback) {
 						var content = "เนื่องจากแพทย์" + mail.doctor_name + "ได้ทำการยกเลิกตารางออกตรวจ ทางระบบจึงต้องขอทำการเปลี่ยนแปลงการนัดหมายที่คุณ" + mail.patient_name +  " ได้เคยนัดไปก่อนหน้า ดังนี้<br /><br />";
 						if(mail.type === 'remove') {
-							content += '<b>ยกเลิกการนัดหมาย</b><br />แพทย์ : ' + mail.doctor_name + '<br />แผนก : ' + mail.dept_name + '<br />ช่วงเวลา : ' + mail.old_start_time + ' ถึง ' + mail.old_end_time ;
+							content += '<b>ยกเลิกการนัดหมาย</b><br />แพทย์ : ' + mail.doctor_name + '<br />แผนก : ' + mail.dept_name + '<br />ช่วงเวลา : ' + mail.old_start_time + ' ถึง ' + mail.old_end_time;
 						} else if(mail.type === 'change') {
 							content += '<b>เลี่ยนเวลา / แพทย์ที่ทำการนัดหมาย</b><br />จากเดิมที่ได้นัดหมายกับแพทย์' + mail.doctor_name + ' แผนก' + mail.dept_name + '<br />ช่วงเวลา : ' + mail.old_start_time + ' ถึง ' + mail.old_end_time + '<br /><b>เปลี่ยนเป็น</b><br />แพทย์ : ' + mail.new_doctor_name + '<br />แผนก : ' + mail.dept_name + ' (แผนกเดิม)<br />ช่วงเวลา : ' + mail.old_end_time + ' ถึง ' + mail.new_end_time;
 						} 
@@ -1045,9 +1046,11 @@ process.on('SIGINT', function() {
 	console.log('EXIT (ctrl + c)');
 	process.exit();
 });
-
+/*
 process.on('uncaughtException', function(err) {
-	console.error('unhandled exception : ' + err);
+	console.error('unhandled exception : ');
+	console.error(err);
 	console.error('app will terminated');
 	process.exit();
 });
+*/

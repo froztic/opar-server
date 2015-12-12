@@ -4,8 +4,8 @@ var async = require("async");
 var Patient = require("../models/user").Patient;
 var Doctor = require("../models/user").Doctor;
 var Department = require("../models/dept").Department;
-var DoctorDept = require("../models/doctordept").DoctorDept;
 var Appointment = require("../models/appt").Appointment;
+var DoctorDept = require("../models/doctordept").DoctorDept;
 
 var ScheduleSchema = new mongoose.Schema({
 	doctor_id : {
@@ -156,12 +156,12 @@ ScheduleSchema.statics.removeschedule = function(data, callback) {
 								Appointment.populate(appts, [
 									{path:'patient_id', select : 'f_name l_name email', model : Patient},
 									{path:'doctor_id', select : 'f_name l_name', model : Doctor},
-									{path:'schedule_id', select : 'start_time end_time', model : Schedule}
 								], function(err4, appts2) {
 									if(err4) {
 										callback(err4, 'db error');
 									} else {
 										async.eachSeries(appts2, function(appt, cb) {
+											console.info(JSON.stringify(appt));
 											var data = {
 												type : 'undefined',
 												patient_name : appt.patient_id.f_name + ' ' + appt.patient_id.l_name,
@@ -170,6 +170,7 @@ ScheduleSchema.statics.removeschedule = function(data, callback) {
 												dept_name : dept_id.name + ' (' + dept_id.location + ')',
 												old_start_time : appt.schedule_id.start_time,
 												old_end_time : appt.schedule_id.end_time
+//												old_schedule_id : appt.schedule_id
 											};
 											if(no_schedule) {
 												Appointment.findOneAndRemove({_id : appt._id}).lean().exec( function(err5, res5) {

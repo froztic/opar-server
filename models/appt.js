@@ -167,7 +167,7 @@ AppointmentSchema.statics.create = function(data, token, callback) {
 	}
 };
 
-AppointmentSchema.statics.edit = function(data, callback) {
+AppointmentSchema.statics.editappt = function(data, callback) {
 	if(!data.appt_id) {
 		callback('input_err', 'incomplete input');
 	} else {
