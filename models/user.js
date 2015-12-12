@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 
 var Department = require("../models/dept").Department;
 var DoctorDept = require("../models/doctordept").DoctorDept;
+var Reset = require("../models/reset").Reset;
 
 var options = { discriminatorKey : 'type' };
 
@@ -107,7 +108,17 @@ UserSchema.statics.recover = function(data, callback) {
 	if(!data.email) {
 		callback('input_error', 'incomplete input');
 	} else {
-		callback('error', 'not impletented');
+		User.findOne({email : data.email}, {'username' : 1}).lean().exec( function(err, res) {
+			if(err) {
+				callback(err, 'db error');
+			} else if(!res) {
+				callback('no_user', 'user not found');
+			} else {
+				Reset.create(res._id, function(err2, res2) {
+					callback(err2, res2);
+				});
+			}
+		});
 	}
 };
 
@@ -122,6 +133,39 @@ UserSchema.statics.changepass = function(data, userObj, callback) {
 				callback('incorrect_password', 'wrong password');
 			} else {
 				callback(null, res);
+			}
+		});
+	}
+};
+
+UserSchema.statics.resetpass = function(data, callback) {
+	if(!data.reset_token || !data.new_pass) {
+		callback('input_error', 'incomplete input');
+	} else {
+		Reset.findOne({reset_token : data.reset_token}).lean().exec( function(err, res) {
+			if(err) {
+				callback(err, 'db error');
+			} else if (!res) {
+				callback('no_token','reset token not found');
+			} else {
+				User.findOneAndUpdate({_id : res.user_id}, {password : data.new_pass}, {select: {'username':1}, new:true}).lean().exec( function(err2, res2) {
+					if(err2) {
+						callback(err2, 'db error');
+					} else if(!res2) {
+						callback('impossible', 'USER NOT FOUND ?? IMPOSSIBLE !!');
+					} else {
+						Reset.findOne({reset_token : data.reset_token}).remove().exec( function(err3, res3) {
+							if(err3) {
+								callback(err3, 'db error');
+							} else if(!res3) {
+								callback('impossible2', 'RESET NOT FOUND ?? IMPOSSIBLE !!');
+							} else {
+								console.info('test out : ' + JSON.stringify(res3));
+								callback(null, 'success');
+							}
+						});
+					}
+				});
 			}
 		});
 	}

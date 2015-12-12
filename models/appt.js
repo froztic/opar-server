@@ -151,7 +151,7 @@ AppointmentSchema.statics.create = function(data, token, callback) {
 					} else if(!res2) {
 						callback('no_schedule', 'schedule not found');
 					} else {
-					new_appt.save(function(err, res) {
+						new_appt.save(function(err, res) {
 							if(err) {
 								callback(err, 'db error');
 							} else {

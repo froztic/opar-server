@@ -16,7 +16,8 @@ require("console-stamp")(console, "yyyy-mm-dd HH:MM:ss.l");
 mongoose.connect('mongodb://127.0.0.1:27017/opar');
 
 var secret = "EIFJHSGUY235THGL6KN7W9L0UIHQW2R0QP5QOJ9SDLFU23GSI8U6HE4TJG8PW4OP9OY3JG6VD8BWYTD3IF0J";
-var mail_pass = '908I3KGJBVP0OIK34ESOD7IKBESRGVLIUKN5ERIU';
+var user_mail = 'oparserver@gmail.com';
+var client_root = 'http://opar.froztic.in.th/html/';
 
 var models = {
 	user : require("./models/user").User,
@@ -55,8 +56,6 @@ transporter.sendMail({
 });
 */
 
-var user_mail = 'oparserver@gmail.com';
-
 var generator = xoauth2.createXOAuth2Generator({
 	user : user_mail,
 	clientId : "782966741102-8mrpg453qo4o1ne17i96n5iofdmpveom.apps.googleusercontent.com",
@@ -72,6 +71,22 @@ var transporter = nodemailer.createTransport({
 	}
 });
 
+var sendmail = function(recv_user, recv_mail, mail_subj, mail_body) {
+	transporter.sendMail({
+		from : 'OPAR System <' + user_mail + '>',
+		to : recv_user + ' <' + recv_mail + '>',
+		headers : {"X-Entity-Ref-ID": null},
+		subject : mail_subj,
+		html : mail_body
+	}, function(err, res) {
+		if(err) {
+			console.error('error sending mail to ' + recv_user + ' <' + recv_mail + '> : ' + err);
+		} else {
+			console.log('successfully send an email to ' + recv_user + ' <' + recv_mail + '>');
+		}
+	});
+};
+/*
 transporter.sendMail({
 	from : 'OPAR System <' + user_mail + '>',
 	to : 'pun hua kuy <pun_sd49@hotmail.com>',
@@ -84,6 +99,7 @@ transporter.sendMail({
 		console.log('successfully send an email to ');
 	}
 });
+*/
 
 //var parser = bodyParser.json();
 var parser = bodyParser.urlencoded({ extended: true, limit: '20mb' });
@@ -358,6 +374,7 @@ app.post('/user.login', function(req, res) {
 	console.log('user : '+ req.body.username + ' is logging in');
 	models.user.login(req.body, function(err, msg) {
 		if(err) {
+			console.error('failed');
 			ret.success = false;
 			ret.msg = msg;
 			res.status(200).send(ret);
@@ -390,10 +407,17 @@ app.post('/user.recover', function(req, res) {
 		success: false,
 		msg: 'undefined'
 	};
+	console.log('someone is trying to request password reset');
 	models.user.recover(req.body, function(err, msg) {
-		ret.success = err? false:true;
-		ret.msg = msg;
-		res.status(200).send(ret);
+		if(err) {
+			ret.success = false;
+			ret.msg = msg;
+		} else {
+			ret.success = true;
+			ret.msg = 'success';
+			res.status(200).send(ret);
+			sendmail(req.body.email, req.body.email, 'รีเซทรหัสผ่าน (password reset) [' + Date.now() + ']', 'reset token : ' + msg + '<br />กรุณากดลิงค์ด้านล่างเพื่อไปยังหน้ารีเซทรหัสผ่าน และใส่ reset token ที่ได้รับมาข้างต้น<br /><a href=\'' + client_root + 'reset_password.html?token=' + msg + '\'>' + client_root + 'reset_password.html?token=' + msg + '</a><br /><br />หากคุณไม่ได้ทำรายการดังกล่าว กรุณาลบอีเมลนี้ทิ้งไป<br/ >ขอบคุณที่ใช้บริการ');
+		}
 	});
 });
 
@@ -419,9 +443,29 @@ app.post('/user.changepass', function(req, res) {
 					ret.msg = 'success';
 					console.log(payload.username + ' password changed');
 				}
-				res.status(200).send(ret)
+				res.status(200).send(ret);
 			});
 		}
+	});
+});
+
+app.post('/user.resetpass', function(req, res) {
+	var ret = {
+		success : false,
+		msg : 'undefined'
+	};
+	console.log('reset password in progress via token : ' + req.body.reset_token);
+	models.user.resetpass(req.body, function(err, msg) {
+		if(err) {
+			ret.success = false;
+			ret.msg = msg;
+			console.error(err);
+		} else {
+			ret.success = true;
+			ret.msg = 'success';
+			console.log('success');
+		}
+		res.status(200).send(ret);
 	});
 });
 
@@ -659,17 +703,62 @@ app.post('/appt.create', function(req, res) {
 			res.status(200).send(ret);
 		} else {
 			console.log(token.username + ' is creating an appointment');
-			models.appt.create(req.body, token, function(err, msg) {
-				if(err) {
-					console.error('failed : ' + err);
+			models.appt.create(req.body, token, function(err0, msg) {
+				if(err0) {
+					console.error('failed : ' + err0);
 					ret.success = false;
 					ret.msg = msg;
+					res.status(200).send(ret);
 				} else {
 					console.log('success');
 					ret.success = true;
 					ret.msg = 'success';
+					res.status(200).send(ret);
+					async.waterfall([
+						function(callback) {
+							models.patient.findById(req.body.patient_id).lean().exec( function (err, doc) {
+								if(err) {
+									callback(err, 'db error');
+								} else {
+									callback(null, doc.f_name + ' ' + doc.l_name, doc.email);
+								}
+							});
+						},
+						function(patient_name, patient_email, callback) {
+							models.doctor.findById(req.body.doctor_id).lean().exec( function (err, doc) {
+								if(err) {
+									callback(err, 'db error');
+								} else {
+									callback(null, patient_name, patient_email, doc.f_name + ' ' + doc.l_name, doc.dept_id);
+								}
+							});
+						},
+						function(patient_name, patient_email, doctor_name, dept_id, callback) {
+							models.dept.findById(dept_id).lean().exec( function (err, doc) {
+								if(err) {
+									callback(err, 'db error');
+								} else {
+									callback(null, patient_name, patient_email, doctor_name, doc.name + ' (' + doc.location + ')');
+								}
+							});
+						},
+						function(patient_name, patient_email, doctor_name, dept_name, callback) {
+							models.schedule.findById(req.body.schedule_id).lean().exec( function (err, doc) {
+								if(err) {
+									callback(err, 'db error');
+								} else {
+									callback(null, patient_name, patient_email, doctor_name, dept_name, doc.start_time, doc.end_time);
+								}
+							});
+						},
+						function(patient_name, patient_email, doctor_name, dept_name, start_date, end_date, callback) {
+							sendmail(patient_name, patient_email, 'ระบบได้ทำการนัดหมายเป็นที่เรียบร้อยแล้ว [' + Date.now() + ']', 'รายละเอียดการนัดหมาย : <br />ช่วงเวลา : ' + start_date + ' ถึง ' + end_date + '<br />ผู้ป่วย : คุณ' + patient_name + '<br />แพทย์ที่นัด : ' + doctor_name + '<br />แผนก : ' + dept_name + '<br /><br />คุณสามารถเปลี่ยนแปลง ตรวจสอบ แก้ไขการนัดหมายได้ผ่านทางหน้าเว็บของระบบ <a href=\'' + client_root + '\'>OPAR System</a><br />ขอบคุณที่ใช้บริการ');
+							callback(null, res);
+						},
+					], function(a_err, a_res) {
+						if(a_err) console.error('a_err');
+					});
 				}
-				res.status(200).send(ret);
 			});
 		}
 	});
