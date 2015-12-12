@@ -4,6 +4,7 @@ var async = require("async");
 var Doctor = require("../models/user").Doctor;
 var Department = require("../models/dept").Department;
 var DoctorDept = require("../models/doctordept").DoctorDept;
+var Appointment = require("../models/appt").Appointment;
 
 var ScheduleSchema = new mongoose.Schema({
 	doctor_id : {
@@ -15,7 +16,7 @@ var ScheduleSchema = new mongoose.Schema({
 	capacity : {
 		type : Number,
 		min : 0,
-		max : 20,
+		max : 15,
 		default : 0
 	}
 });
@@ -25,7 +26,7 @@ ScheduleSchema.statics.searchlist = function(data, callback) {
 		callback('input_err', 'incomplete input');
 	} else {
 		if(data.type === 'doctor') {
-			Schedule.find({doctor_id : data.object_id, start_time: {$gte: Date.now()} })
+			Schedule.find({doctor_id : data.object_id, start_time: {$gte: Date.now()}, capacity : {$lt: 15}})
 			.sort('start_time').skip(parseInt(data.skip)).limit(parseInt(data.limit))
 			.populate({ path : 'doctor_id', select : 'f_name l_name', model : Doctor })
 			.lean().exec(function(err, res) {
@@ -44,12 +45,15 @@ ScheduleSchema.statics.searchlist = function(data, callback) {
 					callback(err, 'db error');
 				} else if(!res) {
 					callback('no_dept', 'department not found');
+				} else if(res.length === 0) {
+					callback('no_list', 'empty doctor schedule');
 				} else {
 					var search_ids = {"$or": []};
 					async.each(res, function(id) {
 						search_ids["$or"].push({"doctor_id": id.doctor_id});
 					});
 					search_ids.start_time = {"$gte":Date.now()};
+					search_ids.capacity = {"$lt":15};
 					Schedule.find(search_ids).sort('start_time').skip(parseInt(data.skip)).limit(parseInt(data.limit))
 					.populate({ path : 'doctor_id', select : 'f_name l_name', model : Doctor }).lean().exec(function(err2, res2) {
 						if(err2) {
@@ -128,6 +132,25 @@ ScheduleSchema.statics.edit = function(data, callback) {
 };
 
 ScheduleSchema.statics.removeschedule = function(data, callback) {
+	if(!data.schedule_id) {
+		callback('input_err', 'incomplete input');
+	} else {
+		Schedule.findOneAndRemove({_id : data.schedule_id}).lean().exec(function(err, res) {
+			if(err) {
+				callback(err, 'db error');
+			} else if(!res) {
+				callback('no_data', 'schedule not found');
+			} else {
+				Appointment.find({schedule_id : data.schedule_id}).remove().lean().exec(function(err2, res2) {
+					if(err2) {
+						callback(err2, 'db error');
+					} else {
+						callback(null, 'success');
+					}
+				});
+			}
+		});
+	}
 };
 
 var Schedule = mongoose.model('schedule', ScheduleSchema);

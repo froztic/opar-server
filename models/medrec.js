@@ -1,5 +1,6 @@
 var mongoose = require("mongoose");
 
+var User = require("../models/user").User;
 var Patient = require("../models/user").Patient;
 var Doctor = require("../models/user").Doctor;
 var Pharmacy = require("../models/user").Pharmacy;
@@ -24,7 +25,7 @@ var MedRecSchema = new mongoose.Schema({
 //	}, 
 	record_date : {
 		type : Date,
-		default : Date.now()
+		default : Date.now
 	},
 	body_weight : Number,
 	body_height : Number,
@@ -32,7 +33,8 @@ var MedRecSchema = new mongoose.Schema({
 	heart_pulse : Number,
 	blood_pressure : Number,
 	symptom : String,
-	disease_code : String
+	disease_code : String,
+	drug_list : String
 });
 
 MedRecSchema.statics.getlist = function(data, token, callback) {
@@ -42,7 +44,7 @@ MedRecSchema.statics.getlist = function(data, token, callback) {
 		callback('err_no_priv', 'no priviledge');
 	} else {
 		MedicalRecord.find({patient_id : data.patient_id})
-		.populate({path: 'patient_id doctor_id', select: 'f_name l_name'})
+		.populate({path: 'patient_id doctor_id', select: 'f_name l_name', model : User})
 		.sort('-record_date')
 		.skip(data.skip)
 		.limit(data.limit)
@@ -60,7 +62,7 @@ MedRecSchema.statics.getlist = function(data, token, callback) {
 };
 
 MedRecSchema.statics.addrec = function(data, token, callback) {
-	if(!data.patient_id || data.doctor_id) {
+	if(!data.patient_id || !data.doctor_id) {
 		callback('error', 'incomplete input');
 	} else {
 		if(token.type === 'doctor' && data.doctor_id !== token._id) {
@@ -77,7 +79,8 @@ MedRecSchema.statics.addrec = function(data, token, callback) {
 				heart_pulse : data.heart_pulse,
 				blood_pressure : data.blood_pressure,
 				symptom : data.symptom,
-				disease_code : data.disease_code
+				disease_code : data.disease_code,
+				drug_list : data.drug_list
 			});
 			new_record.save(function(err,res) {
 				if(err) {
@@ -90,11 +93,13 @@ MedRecSchema.statics.addrec = function(data, token, callback) {
 	}
 };
 
-MedRecSchema.statics.edit = function(data, token, callbac) {
+MedRecSchema.statics.edit = function(data, token, callback) {
 	if(!data.medrec_data) {
 		callback('error', 'incomplete input');
 	} else {
 		if(token.type === 'doctor' && data.medrec_data.doctor_id !== token._id) {
+			console.info(data.medrec_data.doctor_id);
+			console.info(token._id)
 			callback('err_no_priv', 'no priviledge');
 		} else {
 			var md = data.medrec_data;
@@ -107,7 +112,8 @@ MedRecSchema.statics.edit = function(data, token, callbac) {
 				heart_pulse : md.heart_pulse,
 				blood_pressure : md.blood_pressure,
 				symptom : md.symptom,
-				disease_code : md.disease_code
+				disease_code : md.disease_code,
+				drug_list : md.drug_list
 			}).lean().exec(function(err, res) {
 				if(err) {
 					callback(err, 'db error');

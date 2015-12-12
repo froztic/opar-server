@@ -8,11 +8,15 @@ var jwt = require('jsonwebtoken');
 var async = require('async');
 var cors = require('cors');
 
+var nodemailer = require('nodemailer');
+var xoauth2 = require('xoauth2');
+
 require("console-stamp")(console, "yyyy-mm-dd HH:MM:ss.l");
 
 mongoose.connect('mongodb://127.0.0.1:27017/opar');
 
 var secret = "EIFJHSGUY235THGL6KN7W9L0UIHQW2R0QP5QOJ9SDLFU23GSI8U6HE4TJG8PW4OP9OY3JG6VD8BWYTD3IF0J";
+var mail_pass = '908I3KGJBVP0OIK34ESOD7IKBESRGVLIUKN5ERIU';
 
 var models = {
 	user : require("./models/user").User,
@@ -26,7 +30,60 @@ var models = {
 };
 
 var tokend;
+/*
+var transporter = nodemailer.createTransport(require('nodemailer-smtp-pool')({
+	port : 7100,
+	host : 'localhost',
+	secure : false,
+	auth : {
+		user : 'opar-server',
+		pass : mail_pass
+	}
+}));
 
+transporter.sendMail({
+	from: 'test <test@vps.froztic.in.th>',
+	to: '',
+	subject: 'test email system',
+	text : 'aaaaaaaaaasgiuhghldf\r\nnew line'
+}, function(err, res) {
+	if(err) {
+		console.error('client : ' + JSON.stringify(err));
+	} else {
+		console.log('client : success');
+	}
+});
+*/
+
+var user_mail = 'oparserver@gmail.com';
+
+var generator = xoauth2.createXOAuth2Generator({
+	user : user_mail,
+	clientId : "782966741102-8mrpg453qo4o1ne17i96n5iofdmpveom.apps.googleusercontent.com",
+	clientSecret : "xKx7wiLX7RS1io1RzmZYmA1g",
+	refreshToken : "1/mWEECVuANQS7HltlG0ru1xEFmQoek3xBkKdZTppT_Tc",
+	accessToken : "ya29.SAIG4Qy2f23-EeYhtki439zCmWfY0nON9YAeLL5NcUR5-rMvXV7weGERyjqbhQ9NETCz"
+});
+
+var transporter = nodemailer.createTransport({
+	service : 'gmail',
+	auth : {
+		xoauth2: generator
+	}
+});
+
+transporter.sendMail({
+	from : 'OPAR System <' + user_mail + '>',
+	to : 'pun hua kuy <pun_sd49@hotmail.com>',
+	subject : 'invite to alpha test of opar system',
+	html : 'visit us here : <a href=\'http://opar.froztic.in.th\'>http://opar.froztic.in.th</a>'
+}, function(err, res) {
+	if(err) {
+		console.error('error : ' + err);
+	} else {
+		console.log('successfully send an email to ');
+	}
+});
 
 //var parser = bodyParser.json();
 var parser = bodyParser.urlencoded({ extended: true, limit: '20mb' });
@@ -37,6 +94,8 @@ app.use(cors({
 //	origin : "http://opar.froztic.in.th",
 	methods : "GET,POST"
 }));
+
+app.disable('etag');
 
 app.get('/', function(req, res) {
 	res.sendFile(__dirname + '/html/index.html');
@@ -189,7 +248,7 @@ app.get('/medrec.getlist', function(req, res) {
 					ret.success = false;
 					ret.msg = msg;
 				} else {
-					console.error('success');
+					console.log('success');
 					ret.success = true;
 					ret.msg = 'success';
 					ret.medrec_list = msg;
@@ -203,7 +262,7 @@ app.get('/medrec.getlist', function(req, res) {
 app.get('/appt.getlist', function(req, res) {
 	var ret = {
 	};
-	logind.is_login_priv(req.query._token, 5, function(error, token) {
+	logind.is_login_priv(req.query._token, 7, function(error, token) {
 		if(error) {
 			ret.success = false;
 			ret.msg = token;	
@@ -230,7 +289,7 @@ app.get('/appt.getlist', function(req, res) {
 app.get('/schedule.getlist', function(req, res) {
 	var ret = {
 	};
-	logind.is_login_priv(req.query._token, 6, function(error, token) {
+	logind.is_login_priv(req.query._token, 7, function(error, token) {
 		if(error) {
 			console.error('token error : ' + error);
 			ret.success = false;
@@ -479,18 +538,27 @@ app.post('/pharmacy.register', function(req, res) {
 		success : false,
 		msg : 'undefined'
 	};
-	console.log(req.body.username + ' is trying to register as pharmacy');
-	models.user.register(req.body, 'pharmacy', function(err, msg) {
-		if(err) {
-			console.error('failed : '+ err);
+	logind.is_login_priv(req.body._token, 41, function(error, token) {
+		if(error) {
+			console.error('token error : ' + error);
 			ret.success = false;
-			ret.msg = msg;
+			ret.msg = token;
+			res.status(200).send(ret);
 		} else {
-			console.log('success');
-			ret.success = true;
-			ret.msg = 'success';
+			console.log(req.body.username + ' is trying to register as pharmacy');
+			models.user.register(req.body, 'pharmacy', function(err, msg) {
+				if(err) {
+					console.error('failed : '+ err);
+					ret.success = false;
+					ret.msg = msg;
+				} else {
+					console.log('success');
+					ret.success = true;
+					ret.msg = 'success';
+				}
+				res.status(200).send(ret);
+			});
 		}
-		res.status(200).send(ret);
 	});
 });
 
@@ -499,7 +567,7 @@ app.post('/dept.add', function(req, res) {
 		success : false,
 		msg : 'undefined'
 	};
-	logind.is_login(req.body._token, function(error, token) {
+	logind.is_login_priv(req.body._token, 41, function(error, token) {
 		if(error) {
 			console.error('token error : ' + error);
 			ret.success = false;
@@ -583,7 +651,7 @@ app.post('/appt.create', function(req, res) {
 		success : false,
 		msg : 'undefined'
 	};
-	logind.is_login_priv(req.body._token, 5, function(error, token) {
+	logind.is_login_priv(req.body._token, 7, function(error, token) {
 		if(error) {
 			console.error('token error : ' + error);
 			ret.success = false;
@@ -678,7 +746,7 @@ app.post('/appt.setattend', function(req, res) {
 			res.status(200).send(ret);
 		} else {
 			console.log(token.username + ' is going to set appointment attend');
-			models.schedule.setattend(req.body, function(err, msg) {
+			models.appt.setattend(req.body, function(err, msg) {
 				if(err) {
 					console.error('failed : ' + err);
 					ret.success = false;
@@ -819,39 +887,43 @@ logind = (function() {
 							callback(err2, 'fs error');
 						} else {
 							var lines = data.toString().replace(/\r\n?/g, "\n").split("\n");
-							async.each(lines, function(line, cb) {
-								var word = line.split(",");
-								if(word[0] === priv.toString()) {
-									cb(word);
-								} else if(word[0] === "#") {
-									cb(null);
-								} else {
-									cb(null);
-								}
-							}, function(found) {
-								if(found) {
-									var slot = 1;
-									if(res.type === 'patient') {
-										slot = 2;
-									} else if(res.type === 'doctor') {	
-										slot = 3;
-									} else if(res.type === 'officer') {
-										slot = 4;
-									} else if(res.type === 'nurse') {
-										slot = 5;
-									} else if(res.type === 'pharmacy') {
-										slot = 6;
-									}
-									
-									if(found[slot] === "1") {
-										callback(null, res);
+							if(priv.toString() === "41" && res.type === 'admin') {
+								callback(null, res);
+							} else {
+								async.each(lines, function(line, cb) {
+									var word = line.split(",");
+									if(word[0] === priv.toString()) {
+										cb(word);
+									} else if(word[0] === "#") {
+										cb(null);
 									} else {
-										callback('priv', 'no priviledge');
+										cb(null);
 									}
-								} else {
-									callback('fs', 'priviledge not found');
-								}
-							});
+								}, function(found) {
+									if(found) {
+										var slot = 1;	
+										if(res.type === 'patient') {
+											slot = 2;
+										} else if(res.type === 'doctor') {	
+											slot = 3;
+										} else if(res.type === 'officer') {
+											slot = 4;
+										} else if(res.type === 'nurse') {
+											slot = 5;
+										} else if(res.type === 'pharmacy') {
+											slot = 6;
+										}	
+									
+										if(found[slot] === "1") {
+												callback(null, res);
+										} else {
+											callback('priv', 'no priviledge');
+										}
+									} else {
+										callback('fs', 'priviledge not found');
+									}
+								});
+							}
 						}
 					});
 				}
@@ -861,5 +933,16 @@ logind = (function() {
 }());
 
 http.listen(4200, function() {
-	console.log('listening on port 4200 (HTTP)');
+	console.log('HTTP : listening on port 4200');
+});
+
+process.on('SIGINT', function() {
+	console.log('EXIT (ctrl + c)');
+	process.exit();
+});
+
+process.on('uncaughtException', function(err) {
+	console.error('unhandled exception : ' + err);
+	console.error('app will terminated');
+	process.exit();
 });

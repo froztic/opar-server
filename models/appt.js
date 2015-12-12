@@ -40,7 +40,7 @@ AppointmentSchema.statics.getlist = function(data, token, callback) {
 				callback('no_priv', 'no priviledge');
 			} else {
 				Appointment.find({patient_id : data.user_id, is_attend : false})
-				.populate({path : 'schedule_id', select : 'start_time end_time', match: { start_time : { $gte : Date.now() } },  model : Schedule}).exec(function(err2, res2) {
+				.populate({path : 'schedule_id', select : 'start_time end_time', match: { start_time : { $gte : (new Date((new Date).getFullYear() + '-' + ((new Date).getMonth() + 1) + '-' + (new Date).getDate())) } },  model : Schedule}).exec(function(err2, res2) {
 					if(err2) { 
 						callback(err2, 'db error');
 					} else if (!res2) { 
@@ -76,7 +76,7 @@ AppointmentSchema.statics.getlist = function(data, token, callback) {
 				callback('no_priv', 'no priviledge');
 			} else {
 				Appointment.find({doctor_id : data.user_id, is_attend : false})
-				.populate({path : 'schedule_id', select : 'start_time end_time', match: { start_time : { $gte : Date.now() } },  model : Schedule}).exec(function(err2, res2) {
+				.populate({path : 'schedule_id', select : 'start_time end_time', match: { start_time : { $gte : (new Date((new Date).getFullYear() + '-' + ((new Date).getMonth() + 1) + '-' + (new Date).getDate())) } },  model : Schedule}).exec(function(err2, res2) {
 					if(err2) {
 						callback(err2, 'db error');
 					} else if (!res2) {
@@ -259,7 +259,7 @@ AppointmentSchema.statics.setattend = function(data, callback) {
 	if(!data.appt_id) {
 		callback('error', 'incomplete input');
 	} else {
-		Appointment.findOneANdUpdate({_id : data.appt_id}, {is_attend: true}).lean().exec(function(err, res) {
+		Appointment.findOneAndUpdate({_id : data.appt_id}, {is_attend: true}).lean().exec(function(err, res) {
 			if(err) {
 				callback(err, 'db error');
 			} else if(!res) {
