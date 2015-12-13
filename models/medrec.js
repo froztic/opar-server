@@ -31,7 +31,7 @@ var MedRecSchema = new mongoose.Schema({
 	body_height : Number,
 	body_temp : Number,
 	heart_pulse : Number,
-	blood_pressure : Number,
+	blood_pressure : String,
 	symptom : String,
 	disease_code : String,
 	drug_list : String
