@@ -15,7 +15,7 @@ require("console-stamp")(console, "yyyy-mm-dd HH:MM:ss.l");
 
 mongoose.connect('mongodb://127.0.0.1:27017/opar');
 
-var secret = "EIFJHSGUY235THGL6KN7W9L0UIHQW2R0QP5QOJ9SDLFU23GSI8U6HE4TJG8PW4OP9OY3JG6VD8BWYTD3IF0J";
+var secret = "EIFJHSGUY2WE4T83U4JTGEO489TU3TGJBEW7845OG23PQ4EYQA2Y514H2QAT6OAWEGASU4JGBWVSAJCTFQWYB8O2Y3RQWJ";
 var user_mail = 'oparserver@gmail.com';
 var client_root = 'http://opar.froztic.in.th/html/';
 
@@ -243,7 +243,7 @@ app.get('/medrec.getlist', function(req, res) {
 app.get('/appt.getlist', function(req, res) {
 	var ret = {
 	};
-	logind.is_login_priv(req.query._token, 7, function(error, token) {
+	logind.is_login_priv(req.query._token, 15, function(error, token) {
 		if(error) {
 			ret.success = false;
 			ret.msg = token;	
@@ -1037,11 +1037,11 @@ process.on('SIGINT', function() {
 	console.log('EXIT (ctrl + c)');
 	process.exit();
 });
-/*
+
 process.on('uncaughtException', function(err) {
 	console.error('unhandled exception : ');
 	console.error(err);
 	console.error('app will terminated');
-	process.exit();
+//	process.exit();
 });
-*/
+
