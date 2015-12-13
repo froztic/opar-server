@@ -34,30 +34,6 @@ var models = {
 var extjs = require("./removeschedule.js");
 
 var tokend;
-/*
-var transporter = nodemailer.createTransport(require('nodemailer-smtp-pool')({
-	port : 7100,
-	host : 'localhost',
-	secure : false,
-	auth : {
-		user : 'opar-server',
-		pass : mail_pass
-	}
-}));
-
-transporter.sendMail({
-	from: 'test <test@vps.froztic.in.th>',
-	to: '',
-	subject: 'test email system',
-	text : 'aaaaaaaaaasgiuhghldf\r\nnew line'
-}, function(err, res) {
-	if(err) {
-		console.error('client : ' + JSON.stringify(err));
-	} else {
-		console.log('client : success');
-	}
-});
-*/
 
 var generator = xoauth2.createXOAuth2Generator({
 	user : user_mail,
@@ -89,20 +65,6 @@ var sendmail = function(recv_user, recv_mail, mail_subj, mail_body) {
 		}
 	});
 };
-/*
-transporter.sendMail({
-	from : 'OPAR System <' + user_mail + '>',
-	to : 'pun hua kuy <pun_sd49@hotmail.com>',
-	subject : 'invite to alpha test of opar system',
-	html : 'visit us here : <a href=\'http://opar.froztic.in.th\'>http://opar.froztic.in.th</a>'
-}, function(err, res) {
-	if(err) {
-		console.error('error : ' + err);
-	} else {
-		console.log('successfully send an email to ');
-	}
-});
-*/
 
 //var parser = bodyParser.json();
 var parser = bodyParser.urlencoded({ extended: true, limit: '20mb' });
@@ -525,18 +487,27 @@ app.post('/doctor.register', function(req, res) {
 		success : false,
 		msg : 'undefined'
 	};
-	console.log(req.body.username + ' is trying to register as doctor');
-	models.doctor.register(req.body, function(err, msg) {
-		if(err) {
-			console.error('doctor register error : ' + err);
+	logind.is_login_priv(req.body._token, 41, function(error, token) {
+		if(error) {
+			console.error('token error : ' + error);
 			ret.success = false;
-			ret.msg = msg;
+			ret.msg = token;
+			res.status(200).send(ret);
 		} else {
-			console.log('success');	
-			ret.success = true;
-			ret.msg = 'success';
+			console.log(req.body.username + ' is trying to register as doctor');
+			models.doctor.register(req.body, function(err, msg) {
+				if(err) {
+					console.error('doctor register error : ' + err);
+					ret.success = false;
+					ret.msg = msg;
+				} else {
+					console.log('success');	
+					ret.success = true;
+					ret.msg = 'success';
+				}
+				res.status(200).send(ret);
+			});
 		}
-		res.status(200).send(ret);
 	});
 });
 
@@ -545,18 +516,27 @@ app.post('/officer.register', function(req, res) {
 		success : false,
 		msg : 'undefined'
 	};
-	console.log(req.body.username + ' is trying to register as officer');
-	models.user.register(req.body, 'officer', function(err, msg) {
-		if(err) {
-			console.error('failed : '+ err);
+	logind.is_login_priv(req.body._token, 41, function(error, token) {
+		if(error) {
+			console.error('token error : ' + error);
 			ret.success = false;
-			ret.msg = msg;
+			ret.msg = token;
+			res.status(200).send(ret);
 		} else {
-			console.log('success');
-			ret.success = true;
-			ret.msg = 'success';
+			console.log(req.body.username + ' is trying to register as officer');
+			models.user.register(req.body, 'officer', function(err, msg) {
+				if(err) {
+					console.error('failed : '+ err);
+					ret.success = false;
+					ret.msg = msg;
+				} else {
+					console.log('success');
+					ret.success = true;
+					ret.msg = 'success';
+				}
+				res.status(200).send(ret);
+			});
 		}
-		res.status(200).send(ret);
 	});
 });
 
@@ -565,18 +545,27 @@ app.post('/nurse.register', function(req, res) {
 		success : false,
 		msg : 'undefined'
 	};
-	console.log(req.body.username + ' is trying to register as nurse');
-	models.user.register(req.body, 'nurse', function(err, msg) {
-		if(err) {
-			console.error('failed : '+ err);
+	logind.is_login_priv(req.body._token, 41, function(error, token) {
+		if(error) {
+			console.error('token error : ' + error);
 			ret.success = false;
-			ret.msg = msg;
+			ret.msg = token;
+			res.status(200).send(ret);
 		} else {
-			console.log('success');
-			ret.success = true;
-			ret.msg = 'success';
+			console.log(req.body.username + ' is trying to register as nurse');
+			models.user.register(req.body, 'nurse', function(err, msg) {
+				if(err) {
+					console.error('failed : '+ err);
+					ret.success = false;
+					ret.msg = msg;
+				} else {
+					console.log('success');
+					ret.success = true;
+					ret.msg = 'success';
+				}
+				res.status(200).send(ret);
+			});
 		}
-		res.status(200).send(ret);
 	});
 });
 

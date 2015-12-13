@@ -5,10 +5,13 @@ npm list
 ```sh
 	async
 	body-parser
+	console-stamp
 	express
 	jwt
 	mongoose
 	cors
+	nodemailer
+	xoauth2
 ```
 
 required software
